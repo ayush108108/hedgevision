@@ -302,6 +302,7 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 - **Documentation**: See [docs/](docs/) directory
 - **Issues**: [GitHub Issues](https://github.com/ayush108108/hedgevision/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/ayush108108/hedgevision/discussions)
+- **Contact**: ayushverma108108@gmail.com
 
 ---
 
