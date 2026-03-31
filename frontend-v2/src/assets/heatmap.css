@@ -1,0 +1,146 @@
+
+
+/* Remove Grid Lines and Borders */
+.ag-theme-alpine-dark .ag-root-wrapper,
+.ag-theme-alpine-dark .ag-header,
+.ag-theme-alpine-dark .ag-row,
+.ag-theme-alpine-dark .ag-cell {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Cell Styling */
+.ag-theme-alpine-dark .ag-cell {
+    font-family: 'Inter', 'Roboto Mono', monospace, sans-serif !important;
+    font-size: 1.1em !important;
+    font-variant-numeric: tabular-nums;
+    text-align: center !important;
+}
+
+/* Hover Effects */
+.ag-theme-alpine-dark .ag-cell:hover {
+    filter: brightness(1.08) drop-shadow(0 0 4px rgba(41,121,255,0.10));
+    cursor: pointer;
+}
+
+/* Diagonal Cell Styling */
+.ag-theme-alpine-dark .corr-diagonal {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Correlation Cell Classes - Crisp Colors */
+.correlation-strong-negative {
+    background-color: #313695 !important;
+    color: white !important;
+}
+
+.correlation-moderate-negative {
+    background-color: #74add1 !important;
+    color: black !important;
+}
+
+.correlation-neutral {
+    background-color: #f7f7f7 !important;
+    color: black !important;
+}
+
+.correlation-moderate-positive {
+    background-color: #f46d43 !important;
+    color: black !important;
+}
+
+.correlation-strong-positive {
+    background-color: #67001f !important;
+    color: white !important;
+}
+
+
+
+/* Heatmap Content */
+.heatmap-content {
+    min-width: 100%;
+}
+
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-label {
+    font-size: 0.85rem;
+    color: var(--color-text-main);
+}
+
+/* Scroll Indicator Animation */
+@keyframes pulse-scroll-indicator {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.1; }
+}
+
+/* Tooltip Styling */
+.correlation-tooltip {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-divider);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    font-family: 'Inter', sans-serif;
+}
+
+.tooltip-header {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 8px;
+}
+
+.tooltip-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--color-text-main);
+    margin-bottom: 8px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.tooltip-strength {
+    font-size: 0.85em;
+    color: var(--color-label-text);
+    font-weight: 500;
+}
+
+/* AG Grid Tooltip Container */
+.ag-tooltip {
+    background-color: var(--color-bg-card) !important;
+    border: 1px solid var(--color-divider) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    padding: 0 !important;
+    max-width: none !important;
+    font-family: 'Inter', sans-serif !important;
+} 
+
+
+/* Legend Styling */
+.heatmap-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--color-bg-card);
+    border-radius: 8px;
+    margin: 1rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,252 @@
+/* Typography Styles for Financial Dashboard */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* Typography Variables */
+:root {
+    /* Font Families */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    
+    /* Font Sizes */
+    --text-xs: 0.75rem;    /* 12px */
+    --text-sm: 0.875rem;   /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.125rem;   /* 18px */
+    --text-xl: 1.25rem;    /* 20px */
+    --text-2xl: 1.5rem;    /* 24px */
+    --text-3xl: 1.875rem;  /* 30px */
+    --text-4xl: 2.25rem;   /* 36px */
+    
+    /* Line Heights */
+    --leading-none: 1;
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    
+    /* Font Weights */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    
+    /* Letter Spacing */
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+}
+
+/* Base Typography */
+body {
+    font-family: var(--font-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    font-weight: var(--font-normal);
+    color: var(--color-text-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-primary);
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-tight);
+    color: var(--color-text-main);
+    margin-top: 0;
+    letter-spacing: var(--tracking-tight);
+}
+
+h1 {
+    font-size: var(--text-4xl);
+    margin-bottom: 1.5rem;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--color-heading);
+}
+
+h2 {
+    font-size: var(--text-3xl);
+    margin-bottom: 1.25rem;
+    color: var(--color-heading);
+}
+
+h3 {
+    font-size: var(--text-2xl);
+    margin-bottom: 1rem;
+    color: var(--color-text-main);
+}
+
+h4 {
+    font-size: var(--text-xl);
+    margin-bottom: 0.75rem;
+    color: var(--color-text-main);
+}
+
+h5 {
+    font-size: var(--text-lg);
+    margin-bottom: 0.5rem;
+    color: var(--color-text-main);
+}
+
+h6 {
+    font-size: var(--text-base);
+    margin-bottom: 0.5rem;
+    color: var(--color-label-text);
+}
+
+/* Paragraphs */
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    max-width: 70ch; /* For optimal reading length */
+}
+
+/* Links */
+a {
+    color: var(--color-accent-blue);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-hover-blue);
+    text-decoration: underline;
+}
+
+/* Lists */
+ul, ol {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+/* Numeric Data - Use monospace font for better alignment */
+.numeric-value, 
+.data-value, 
+.correlation-value,
+table td.numeric {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.01em;
+}
+
+/* Form Elements */
+label {
+    font-weight: var(--font-medium);
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    color: var(--color-label-text);
+}
+
+/* Card Typography */
+.card-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    margin-bottom: 0.75rem;
+    color: var(--color-text-main);
+}
+
+.card-subtitle {
+    font-size: var(--text-lg);
+    font-weight: var(--font-medium);
+    margin-bottom: 0.5rem;
+    color: var(--color-label-text);
+}
+
+.card-header h5 {
+    font-weight: var(--font-semibold);
+    margin-bottom: 0;
+    color: var(--color-text-main);
+}
+
+/* Button Text */
+.btn {
+    font-weight: var(--font-medium);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* Navigation Elements */
+.nav-link {
+    font-weight: var(--font-medium);
+}
+
+/* Chart Text Elements */
+.js-plotly-plot .plotly .gtitle, 
+.js-plotly-plot .plotly .xtitle, 
+.js-plotly-plot .plotly .ytitle {
+    font-family: var(--font-primary) !important;
+    font-size: var(--text-lg) !important;
+    font-weight: var(--font-medium) !important;
+}
+
+/* Chart Axis Labels */
+.js-plotly-plot .plotly .xtick text, 
+.js-plotly-plot .plotly .ytick text {
+    font-family: var(--font-primary) !important;
+    font-size: var(--text-sm) !important;
+}
+
+/* Heatmap Cell Values */
+.js-plotly-plot .plotly .heatmap text {
+    font-family: var(--font-mono) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-medium) !important;
+}
+
+/* Tooltips */
+.tooltip, [data-toggle="tooltip"] {
+    font-size: var(--text-sm);
+}
+
+/* Footer Text */
+.footer-text {
+    font-size: var(--text-sm);
+    color: var(--color-label-text);
+}
+
+/* Section Descriptions */
+.section-description {
+    font-size: var(--text-lg);
+    color: var(--color-label-text);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: var(--font-normal);
+}
+
+/* Mobile Typography Adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: var(--text-3xl);
+    }
+    
+    h2 {
+        font-size: var(--text-2xl);
+    }
+    
+    h3 {
+        font-size: var(--text-xl);
+    }
+    
+    h4, h5 {
+        font-size: var(--text-lg);
+    }
+    
+    .card-title {
+        font-size: var(--text-lg);
+    }
+    
+    .section-description {
+        font-size: var(--text-base);
+    }
+} 

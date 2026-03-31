@@ -1,0 +1,42 @@
+{
+  "name": "hedgevision-api",
+  "description": "HedgeVision statistical arbitrage API",
+  "repository": "https://github.com/ayush-jadaun/stat-arb-v2",
+  "keywords": ["python", "fastapi", "quantitative-finance", "statistical-arbitrage"],
+  "stack": "heroku-24",
+  "env": {
+    "DATA_BACKEND": {
+      "description": "Data storage backend: sqlite or supabase",
+      "value": "supabase"
+    },
+    "SUPABASE_URL": {
+      "description": "Supabase project URL",
+      "required": true
+    },
+    "SUPABASE_KEY": {
+      "description": "Supabase service role key",
+      "required": true
+    },
+    "CORS_ORIGINS": {
+      "description": "Comma-separated allowed origins for CORS",
+      "value": "*"
+    },
+    "API_DEBUG": {
+      "description": "Enable debug mode (disable rate limiting, verbose logs)",
+      "value": "false"
+    },
+    "MODEL_VERSION": {
+      "description": "Model version tag for scoped DB writes",
+      "value": "prod-v1"
+    }
+  },
+  "buildpacks": [
+    { "url": "heroku/python" }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  }
+}

@@ -1,0 +1,276 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.env
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+.cache/
+nosetests.xml
+coverage.xml
+coverage.json
+htmlcov/
+*.cover
+.hypothesis/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+prices.db
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js (Frontend)
+node_modules/
+frontend/node_modules/
+frontend-v2/node_modules/
+frontend/build/
+frontend-v2/dist/
+frontend-v2/build/
+frontend/.env
+frontend-v2/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+frontend-v2/.next/
+frontend-v2/.turbo/
+frontend-v2/.cache/
+frontend-v2/.eslintcache
+frontend-v2/.env.local
+frontend-v2/.env.*.local
+frontend-v2/.DS_Store
+frontend-v2/dist/
+frontend-v2/build/
+frontend-v2/coverage/
+frontend-v2/.nuxt/
+frontend-v2/.vercel/
+frontend-v2/.firebase/
+frontend-v2/.yarn/
+frontend-v2/.pnp/
+frontend-v2/.pnp.js
+docs/screenshots/
+*.log
+*.tmp
+*.bak
+*.orig
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+coverage/
+htmlcov/
+__pycache__/
+*.sqlite3
+*.db
+*.db-journal
+*.pid
+*.seed
+*.tar.gz
+*.zip
+*.tgz
+*.gz
+*.rar
+*.7z
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+*.npy
+*.npz
+*.rds
+*.RData
+*.sav
+*.dta
+*.sas7bdat
+*.jsonl
+*.ipynb_checkpoints
+*.ipynb
+*.pdf
+*.docx
+*.pptx
+*.ppt
+*.doc
+*.rtf
+*.md.bak
+*.md~
+
+# Frontend build (ensure dist is ignored)
+frontend-v2/dist/
+frontend-v2/build/
+frontend-v2/.next/
+frontend-v2/out/
+*.tsbuildinfo
+
+# Cache directories
+cache-directory/
+.cache/
+
+# Backup files
+backups/
+*.bak
+
+# Data directories
+data/
+export_data/
+backend/output/
+backend/audit_reports/
+holiday_data/api_test_output/
+holiday_data/test_output*/
+holiday_data/tmp/
+
+# Redis
+dump.rdb
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment variables (ALL variants)
+.env
+.env.*
+!.env.example
+!env.example
+.env.local
+.env.production
+.env.development
+.env.test
+
+# Docker
+.docker/
+
+# Sensitive files
+*.key
+*.pem
+*.cert
+credentials.json
+secrets.json
+
+# Additional cleanup entries
+# Testing artifacts
+test_results/
+coverage_reports/
+*.test.log
+
+# Temporary files
+temp_*
+debug_*
+*.tmp
+
+# IDE artifacts
+.vscode/settings.json
+.idea/workspace.xml
+
+# Data pipeline tracking files
+tiingo_symbols_tracking.json
+fmp_symbol_updates.json
+*_tracking.json
+
+# Pipeline logs
+daily_eod_pipeline.log
+intraday_4h_pipeline.log
+analytics_computation_pipeline.log
+
+# Temporary test/analysis scripts in root
+/check_*.py
+/verify_*.py
+/analyze_*.py
+/test_*.py
+
+# Temporary test/analysis scripts under scripts/
+scripts/check_*.py
+scripts/verify_*.py
+scripts/analyze_*.py
+
+# Temporary deployment docs
+/*_AUDIT.md
+/*_CHECKLIST*.md
+/*_FIX*.md
+/*_ISSUE*.md
+/*_DEPLOYMENT*.md
+
+# Frontend environment files
+frontend-v2/.env
+frontend-v2/.env.local
+frontend-v2/.env.production
+
+# Benchmark data
+.benchmarks/
+
+# Jupyter notebooks (if any)
+*.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# Migration backups
+*.sql.bak
+migrations/*.bak
+
+# Script outputs
+scripts/output/
+scripts/temp/
+scripts/.filtered_pairs_temp.txt
+scripts/filtered_pairs_manifest.json
+ 
+# Large generated index (exclude from repo, recommend regenerating locally)
+backend/code_index.json
+ 
+# DigitalOcean temp app specs (avoid committing secrets)
+.do/app.redis.temp.yaml
+.do/*.temp.yaml
+.do/app.export.yaml

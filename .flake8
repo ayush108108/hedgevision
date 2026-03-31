@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 100
+exclude = .git,__pycache__,build,dist,.venv,venv,node_modules,frontend-v2,cache-directory
+# E203: whitespace before ':' (black compatibility)
+# W503: line break before binary operator (black compatibility)
+ignore = E203,W503

@@ -1,0 +1,692 @@
+/* Financial Dashboard CSS - Modern Professional Style */
+
+/* Import Typography Styles */
+@import url('typography.css');
+
+/* Brand Colors & CorrelateX Color Palette & Tokens */
+:root {
+    /* CorrelateX Color Palette */
+    /* Backgrounds */
+    --color-bg: #000000;            /* Global Dashboard */
+    --color-bg-card: #0c0c0c;        /* Standard Card Fill */
+    --color-offer-fill: #ff1400;     /* Early Access/Offer Card */
+    --color-live-fill: #ff6a00;      /* LIVE Section */
+    --color-evolving-fill: #0013ff;  /* EVOLVING Card */
+    --color-comingsoon-fill: #7746b3;/* COMING SOON Card */
+
+    /* Text */
+    --color-text-main: #eaeaea;       /* Primary Readable Text */
+    /* --color-hero-primary: #eef6f8;   Main Tagline */
+    --color-label-text: #9c9fa1;     /* Static Labels, Indicators, Tags, Descriptions */
+    --color-dropdown-text: #ffffff;  /* Dropdown/Input Fields - Keep for date picker & waitlist inputs */
+    --color-nav-title: #ffffff;      /* Small Nav Text */
+
+    /* Accents & Highlights */
+    --color-heading: #007aff;        /* Major Section Headers */
+    --color-accent-blue: #007aff;    /* Subheadlines, Highlights */
+
+    /* Interactive Elements */
+    --color-hover-blue: #339cff;     /* Hover on Links, Icons, Dropdowns */
+    --color-cta: #ff6f1f;            /* Buttons (Run AI, Submit, Apply Dates, etc.) */
+    --color-toast-success: #ff6f1f;  /* Notifications, Signals */
+
+    /* Dividers */
+    --color-divider: #1a1a1a;        /* Card Outlines, Gridlines, Muted Dividers */
+
+    /* Glow Effects */
+    --color-glow-orange: #ff7a29;    /* Cards, Borders, CTAs */
+    --color-glow-purple: #aa66ff;    /* AI-related Blocks */
+    --color-evolving-shadow: #0077e1;/* EVOLVING Card */
+    --color-comingsoon-shadow: #aa669b;/* COMING SOON Card */
+
+    /* Charts */
+    --chart-primary-line: #007aff;   /* Rolling Correlation Line, Main Chart Color */
+    --chart-warning-zone: #ff6f1f;   /* Volatility Zone, Divergence, Thresholds */
+    
+    /* --- Legacy / Existing Variables (Keep for reference or gradual removal) --- */
+    --black: #0D0D0D;       /* Main UI background */
+    --blue: #2979FF;        /* Active tabs, chart lines */
+    --orange: #FF6F00;      /* Buttons, spikes, badges */
+    --red: #FF3D00;         /* Alerts, warning signals */
+    --purple: #9C27B0;      /* Hover states, deeper data layers */
+    --white: #FFFFFF;       /* Headings, card titles */
+    --gray: #B0B0B0;        /* Labels, tooltips */
+    
+    /* Legacy variables mapped to new colors */
+    --dark-blue: var(--blue); /* Keep mapping for now */
+    --light-blue: var(--blue); /* Keep mapping for now */
+    --grey: var(--gray); /* Keep mapping for now */
+    --text-dark: var(--black); /* Keep mapping for now */
+    --text-light: var(--white); /* Keep mapping for now */
+    --light-grey: #F5F5F7;  /* Keep mapping for now */
+    
+    /* Structure & Component variables (Keep originals for now) */
+    --divider-color: rgba(176, 176, 176, 0.2);
+    --card-shadow: 0 10px 30px rgba(13, 13, 13, 0.1);
+    --hover-shadow: 0 15px 40px rgba(13, 13, 13, 0.15);
+    --section-spacing: 2.5rem;
+    --card-radius: 12px;
+    --control-area-bg: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+}
+
+/* Global Styles */
+body {
+    background-color: var(--color-bg); /* Use black background */
+    color: var(--color-text-main); /* Use main text color */
+    line-height: 1.6;
+}
+
+.logo-img {
+    max-height: 120px;
+    object-fit: contain;
+    width: auto;
+    margin-left: 0;
+    margin-bottom: 2rem; /* Add margin below tagline */
+}
+
+/* Main Section Styles */
+.section-description {
+    color: var(--gray);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* Subsection styling - cleaner with less background color */
+.subsection {
+    border-left: 3px solid var(--blue);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background-color: var(--color-bg-card); /* Use card background */
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 8px rgba(13, 13, 13, 0.05);
+}
+
+.control-area {
+    background-color: var(--color-bg-card); /* Use darker control bg - Using card bg for now */
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--blue);
+    box-shadow: 0 2px 8px rgba(13, 13, 13, 0.03);
+}
+
+.chart-container .card {
+    transition: all 0.3s ease;
+}
+
+.chart-container .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(13, 13, 13, 0.08) !important;
+}
+
+/* Dividers instead of nested cards */
+.content-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--divider-color), transparent);
+    margin: 1.5rem 0;
+    width: 100%;
+}
+
+/* Sector Tabs */
+.nav-tabs {
+    border-bottom: 1px solid var(--divider-color);
+    margin-bottom: 1.5rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--color-label-text);
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+    margin-right: 5px;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--color-bg-card);
+    color: var(--color-accent-blue);
+    border: none;
+    border-bottom: 3px solid var(--blue);
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    background-color: rgba(41, 121, 255, 0.08);
+    color: var(--color-hover-blue);
+    border-color: transparent;
+}
+
+/* Date Picker Styling - improved contrast */
+.DateInput {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.DateInput_input {
+    padding: 10px 15px;
+    color: var(--color-dropdown-text);
+    border-radius: 8px;
+    border: 1px solid rgba(176, 176, 176, 0.4);
+    background-color: var(--color-bg-card); /* Use card background */
+    font-weight: 500;
+}
+
+.DateInput_input:hover, .DateInput_input:focus {
+    border-color: var(--blue);
+}
+
+.DateRangePickerInput {
+    background-color: var(--color-bg-card); /* Use card background */
+    border: 1px solid rgba(176, 176, 176, 0.4);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    box-shadow: 0 1px 3px rgba(13, 13, 13, 0.05);
+    width: 100%;
+}
+
+.CalendarDay {
+    color: var(--color-text-main);
+    border: 1px solid var(--color-divider);
+    background-color: var(--color-bg);
+}
+
+.CalendarDay:hover {
+     background-color: #080808;
+     border: 1px solid var(--color-divider);
+     color: var(--color-hover-blue);
+}
+
+.CalendarDay__selected,
+.CalendarDay__selected:hover {
+    background-color: var(--blue);
+    border: 1px double var(--blue);
+    color: var(--color-dropdown-text);
+}
+
+.CalendarDay__selected_span {
+    background-color: rgba(41, 121, 255, 0.25);
+    border: 1px double rgba(41, 121, 255, 0.25);
+    color: var(--color-text-main);
+}
+
+.CalendarDay__selected_span:hover {
+     background-color: rgba(0, 122, 255, 0.4);
+     border: 1px double rgba(0, 122, 255, 0.4);
+     color: var(--color-hover-blue);
+}
+
+.CalendarDay__hovered_span,
+.CalendarDay__hovered_span:hover {
+    background-color: rgba(41, 121, 255, 0.15);
+    border: 1px double rgba(41, 121, 255, 0.15);
+    color: var(--color-hover-blue);
+}
+
+/* Apply Button Styling - increased contrast */
+#apply-dates-button {
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(255, 111, 0, 0.2);
+    width: 100%;
+    background-color: var(--orange);
+    border-color: var(--orange);
+    color: var(--color-dropdown-text);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+#apply-dates-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 111, 0, 0.3);
+    background-color: #F06000;
+}
+
+/* Simplified Card Styles - only for main sections */
+.card {
+    border-radius: var(--card-radius);
+    border: none;
+    box-shadow: var(--card-shadow);
+    margin-bottom: var(--section-spacing);
+    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: var(--color-bg-card); /* Use card background */
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+/* Main section cards with stronger contrast */
+.card.mb-5 {
+    box-shadow: var(--card-shadow);
+    margin-bottom: 3rem;
+    border-top: 4px solid var(--blue);
+}
+
+.card-header {
+    background-color: var(--color-bg-card);
+    border-bottom: 2px solid rgba(41, 121, 255, 0.2);
+    border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+    padding: 1.5rem;
+    color: var(--color-text-main);
+}
+
+.card-header h2 {
+    color: var(--color-heading);
+    font-weight: 600;
+}
+
+.card-header h5 {
+    color: var(--color-label-text);
+    font-weight: 500;
+}
+
+.card-body {
+    padding: 1.75rem;
+    background-color: var(--color-bg-card); /* Use card background */
+}
+
+/* Label styling for form elements */
+label {
+    color: var(--color-label-text);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    :root {
+        --section-spacing: 1.5rem;
+    }
+    
+    .chart-container {
+        padding: 10px 5px;
+    }
+    
+    /* Mobile Logo */
+    .logo-img {
+        max-height: 80px;
+    }
+    
+    /* Adjust header underline for mobile */
+    h1:after {
+        width: 80px;
+        margin: 10px auto 0;
+    }
+    
+    /* Mobile Date Picker */
+    .DateInput {
+        width: 100%;
+    }
+    
+    .DateInput_input {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .DateRangePicker, .DateRangePickerInput {
+        width: 100%;
+    }
+    
+    #apply-dates-button {
+        padding: 10px 16px;
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    /* Mobile Tabs - improve scrolling */
+    .nav-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 8px 12px;
+        margin-right: 2px;
+        white-space: nowrap;
+    }
+    
+    .card-body {
+        padding: 1.25rem 0.75rem;
+    }
+    
+    .subsection, .control-area {
+        padding: 1rem 0.75rem;
+    }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem 0.5rem;
+    }
+    
+    .subsection {
+        border-left-width: 2px;
+        padding: 0.75rem;
+    }
+    
+    .control-area {
+        padding: 1rem 0.75rem;
+    }
+    
+    /* Date range picker on smaller screens */
+    .DateInput_input {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+    
+    /* Chart container height for small screens */
+    .chart-container .js-plotly-plot {
+        min-height: 350px !important;
+    }
+}
+
+/* Chart Enhancements */
+.js-plotly-plot .plotly {
+    transition: all 0.3s ease;
+}
+
+.js-plotly-plot .plotly:hover {
+    box-shadow: 0 4px 12px rgba(13, 13, 13, 0.08);
+}
+
+/* Plotly graphs */
+.js-plotly-plot {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--color-bg-card); /* Use card background */
+}
+
+/* CorrelateX branding-specific classes */
+.correlate-primary {
+    color: var(--color-heading);
+}
+
+.correlate-accent {
+    color: var(--color-cta);
+}
+
+.correlate-alert {
+    color: var(--red);
+}
+
+.correlate-deep {
+    color: var(--purple);
+}
+
+.correlate-text-main {
+    color: var(--color-text-main);
+}
+
+.correlate-text-label {
+    color: var(--color-label-text);
+}
+
+.bg-correlate-primary {
+    background-color: var(--blue);
+    color: var(--color-dropdown-text);
+}
+
+.bg-correlate-accent {
+    background-color: var(--orange);
+    color: var(--color-dropdown-text);
+}
+
+.bg-correlate-main {
+    background-color: var(--black);
+    color: var(--white);
+}
+
+.bg-correlate-card {
+    background-color: var(--color-bg-card);
+    color: var(--color-text-main);
+}
+
+/* Correlation Heatmap Mobile Enhancements */
+#mobile-correlation-view {
+    width: 100%;
+    position: relative;
+    border-radius: 8px;
+    background-color: var(--color-bg-card); /* Use card bg */
+    box-shadow: 0 2px 10px rgba(13, 13, 13, 0.05);
+    overflow: hidden;
+}
+
+/* Horizontal scroll container for mobile */
+#mobile-correlation-view {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--blue) var(--light-grey); /* Firefox */
+    position: relative;
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+/* Custom scrollbar for WebKit browsers */
+.heatmap-scroll-container::-webkit-scrollbar {
+    height: 6px;
+    background-color: var(--color-bg-card); /* Use card bg for scrollbar track */
+    border-radius: 3px;
+}
+
+.heatmap-scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--blue); /* Will be updated later */
+    border-radius: 3px;
+}
+
+/* Inner content that will be scrollable if needed */
+.heatmap-content {
+    min-width: 100%;
+}
+
+/* Responsive sizing based on screen width */
+@media (max-width: 992px) {
+    .heatmap-content {
+        min-width: 850px; /* Ensure heatmap has room to display properly */
+    }
+}
+
+@media (max-width: 768px) {
+    .heatmap-container {
+        margin: 0 -0.5rem; /* Negative margin to use more screen space */
+    }
+    
+    .heatmap-content {
+        min-width: 700px;
+    }
+    
+    /* Scroll indicator for mobile */
+    .heatmap-container::after {
+        content: '';
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(90deg, rgba(255,255,255,0), var(--blue));
+        opacity: 0.3;
+        border-radius: 0 8px 8px 0;
+        pointer-events: none;
+        animation: pulse-scroll-indicator 2s infinite;
+    }
+}
+
+@media (max-width: 576px) {
+    .heatmap-content {
+        min-width: 600px;
+    }
+}
+
+/* Animation for scroll indicator */
+@keyframes pulse-scroll-indicator {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.1; }
+}
+
+/* Mobile Correlation Chart Styles */
+.mobile-correlation-chart {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(13, 13, 13, 0.05);
+    margin-bottom: 1rem;
+    touch-action: pan-y;  /* Enable vertical touch scrolling */
+    background-color: var(--color-bg-card); /* Card bg */
+}
+
+/* Increase tap target size on mobile */
+.mobile-correlation-chart .gtitle,
+.mobile-correlation-chart .xtitle,
+.mobile-correlation-chart .ytitle {
+    fill: var(--color-text-main) !important;
+    font-weight: 500;
+}
+
+/* Optimize bar labels on mobile */
+.mobile-correlation-chart .xtick text,
+.mobile-correlation-chart .ytick text {
+     fill: var(--color-label-text) !important;
+     font-weight: 500;
+}
+
+/* Add highlight effect on tap */
+.mobile-correlation-chart .bars path:active {
+    filter: brightness(1.2);
+}
+
+/* --- Override Card overflow for Correlation Card --- */
+#correlation-card {
+    overflow: visible !important;
+}
+/* --- END Override --- */
+
+.js-plotly-plot {
+    overflow: visible !important;
+}
+
+/* ============================================================================
+   MODULAR TAB NAVIGATION STYLES
+   ============================================================================ */
+
+/* Main tabs container */
+#main-tabs {
+    background-color: var(--color-bg-card);
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Individual tab styling */
+#main-tabs .nav-link {
+    color: var(--color-label-text);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Tab hover state */
+#main-tabs .nav-link:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+    color: var(--color-hover-blue);
+    transform: translateY(-2px);
+}
+
+/* Active tab */
+#main-tabs .nav-link.active {
+    background: linear-gradient(135deg, var(--color-accent-blue), var(--color-hover-blue));
+    color: var(--color-dropdown-text);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+    font-weight: 600;
+}
+
+/* Tab content area */
+.tab-content {
+    background-color: transparent;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+/* Responsive tab navigation */
+@media (max-width: 768px) {
+    #main-tabs .nav-link {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+        margin: 0.25rem 0;
+    }
+    
+    #main-tabs .nav-tabs {
+        flex-direction: column;
+    }
+}
+
+/* Enhanced card styling within tabs */
+.tab-pane .card {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-divider);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.tab-pane .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 122, 255, 0.15);
+}
+
+/* Section headers within tabs */
+.tab-pane h1, .tab-pane h2 {
+    color: var(--color-heading);
+    text-shadow: 0 0 20px rgba(0, 122, 255, 0.3);
+}
+
+/* Emoji icons in tabs */
+#main-tabs .nav-link::before {
+    margin-right: 0.5rem;
+}
+
+/* Loading animations */
+.tab-pane .loading-container {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Smooth transitions between tabs */
+.tab-pane {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

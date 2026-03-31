@@ -1,0 +1,135 @@
+# Pre-commit configuration for HedgeVision + DB Health Integration
+# Ensures code quality, formatting, and security standards
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-json
+    -   id: check-toml
+    -   id: check-added-large-files
+        args: [--maxkb=1000]
+    -   id: debug-statements
+    -   id: check-merge-conflict
+    -   id: check-case-conflict
+    -   id: mixed-line-ending
+        args: [--fix=lf]
+
+# Python code formatting
+-   repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+    -   id: black
+        args: [--line-length=100, --target-version=py310]
+        language_version: python3.10
+
+# Import sorting
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args: [--profile=black, --line-length=100]
+
+# Linting and style checking
+-   repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+    -   id: flake8
+        additional_dependencies: 
+        - flake8-docstrings
+        - flake8-bugbear
+        - flake8-comprehensions
+        - flake8-security
+        args: 
+        - --max-line-length=100
+        - --ignore=E203,W503,D100,D104,B008
+        - --per-file-ignores=__init__.py:F401
+        exclude: ^(migrations/|tests/legacy_|scripts/cleanup_)
+
+# Type checking
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+    -   id: mypy
+        additional_dependencies: 
+        - types-requests
+        - types-redis
+        - types-python-dateutil
+        - types-pytz
+        args: [--ignore-missing-imports, --python-version=3.10]
+        exclude: ^(tests/|scripts/cleanup_|migrations/)
+
+# Security scanning
+-   repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+    -   id: bandit
+        args: [-r, --skip=B101,B601]
+        exclude: ^tests/
+
+# Dependency scanning
+-   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+    -   id: python-safety-dependencies-check
+        args: [--ignore=70612]  # Ignore jinja2 vulnerability in dev deps
+
+# Documentation linting
+-   repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0
+    hooks:
+    -   id: markdownlint
+        args: [--disable=MD013,MD033,MD041]  # Disable line length, HTML, first line rules
+
+# Environment file validation  
+-   repo: local
+    hooks:
+    -   id: env-validator
+        name: Environment file validation
+        entry: python
+        args: [-c, "import os; assert os.path.exists('.env') or os.path.exists('ENV_EXAMPLE.md'), 'Environment configuration required'"]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# Custom hooks for HedgeVision
+-   repo: local
+    hooks:
+    -   id: test-imports
+        name: Test critical imports
+        entry: python
+        args: [-c, "import fastapi, pandas, numpy, supabase; print('✅ Critical imports working')"]
+        language: system
+        pass_filenames: false
+        types: [python]
+    
+    -   id: no-debug-prints
+        name: Check for debug print statements
+        entry: python
+        args: [-c, "import sys, re; sys.exit(1 if any(re.search(r'print\\s*\\((?!.*#\\s*debug)', line) for line in open(sys.argv[1]).readlines()) else 0)"]
+        language: system
+        types: [python]
+        exclude: ^(tests/|scripts/|debug_)
+
+# Frontend pre-commit hooks (if frontend files are modified)
+-   repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.14.0
+    hooks:
+    -   id: eslint
+        files: \.(js|jsx|ts|tsx)$
+        additional_dependencies:
+        - eslint@8.54.0
+        - '@typescript-eslint/eslint-plugin@6.11.0'
+        - '@typescript-eslint/parser@6.11.0'
+        args: [--fix, --max-warnings=0]
+        exclude: node_modules/
+
+-   repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+    -   id: prettier
+        files: \.(js|jsx|ts|tsx|json|css|md)$
+        exclude: node_modules/

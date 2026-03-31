@@ -1,0 +1,162 @@
+# HedgeVision + DB Health Integration - Complete Requirements
+# Enterprise-grade quantitative trading platform with multi-provider data infrastructure
+# Python 3.10+ required
+
+# ===============================================================================
+# CORE BACKEND STACK
+# ===============================================================================
+# FastAPI web framework with async support
+fastapi==0.135.1
+uvicorn[standard]==0.41.0
+pydantic==2.12.5
+python-dotenv==1.0.1
+
+# HTTP clients for market data and API integration
+requests==2.32.3
+tenacity>=8.2.0
+aiohttp>=3.10.6,<4.0.0
+httpx==0.27.2
+
+# ===============================================================================
+# DATABASE & DATA INFRASTRUCTURE
+# ===============================================================================
+# Supabase integration and PostgreSQL support
+supabase==2.8.0
+postgrest==0.17.0
+# realtime==2.0.6  # Commented out to avoid websockets conflict
+storage3==0.7.7
+gotrue==2.12.4
+
+# SQLAlchemy for database ORM (local development/testing)
+sqlalchemy==2.0.35
+alembic==1.13.3
+psycopg2-binary==2.9.9
+
+# ===============================================================================
+# DATA & ANALYTICS STACK  
+# ===============================================================================
+# Scientific computing and data analysis
+pandas==2.2.3
+numpy>=1.22.4,<2.3
+scipy==1.15.2
+statsmodels==0.14.4
+scikit-learn==1.5.2
+
+# Financial data and time series
+yfinance==0.2.66
+arch==7.1.0
+newspaper3k
+vaderSentiment
+
+# ===============================================================================
+# CACHING
+# ===============================================================================
+# Redis for caching (Celery removed - GitHub Actions handles scheduling)
+redis==5.2.1
+
+# ===============================================================================
+# DATA PROVIDERS & MARKET DATA
+# ===============================================================================
+# Multi-provider data ingestion support (install based on available API keys)
+alpha-vantage==2.3.1
+# polygon-api-client==1.14.2  # Commented out to avoid websockets conflict
+ccxt==4.4.4
+python-binance==1.0.19
+
+# LangChain ecosystem for AI agents and workflows
+langchain==0.3.7
+langchain-openai==0.2.9
+langchain-anthropic==0.2.4
+langchain-community==0.3.7
+langchain-core>=0.3.17,<0.4.0
+tiktoken==0.8.0
+openai==1.54.5
+anthropic==0.39.0
+langgraph
+
+# ===============================================================================
+# UTILITIES & HELPERS
+# ===============================================================================
+# Agentic orchestration
+langgraph
+# Date/time handling and utilities
+python-dateutil==2.9.0
+pytz==2024.2
+croniter==3.0.3
+
+# Configuration and environment management
+pydantic-settings==2.6.0
+typer==0.12.5
+rich==13.9.2
+click==8.1.7
+
+# MCP server compatibility
+mcp==1.26.0
+sse-starlette==3.3.2
+
+# File handling and data processing
+openpyxl==3.1.5
+xlsxwriter==3.2.0
+lxml==5.3.0
+beautifulsoup4==4.12.3
+
+# ===============================================================================
+# SECURITY & AUTHENTICATION
+# ===============================================================================
+# Authentication and security
+email-validator==2.2.0
+pyjwt>=2.10.1,<3.0.0
+passlib==1.7.4
+bcrypt==4.2.0
+cryptography==43.0.3
+
+# ===============================================================================
+# MONITORING & LOGGING
+# ===============================================================================
+# Enhanced logging and monitoring
+loguru==0.7.2
+structlog==24.4.0
+prometheus-client==0.21.1
+
+# ===============================================================================
+# TESTING & DEVELOPMENT
+# ===============================================================================
+# Testing framework and coverage
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+pytest-xdist==3.6.0
+pytest-benchmark==4.0.0
+factory-boy==3.3.1
+
+# Development tools
+black==24.10.0
+isort==5.13.2
+flake8==7.1.1
+mypy==1.13.0
+pre-commit==4.0.1
+
+# Performance profiling
+memory-profiler==0.61.0
+line-profiler==4.1.3
+py-spy==0.3.14
+
+# ===============================================================================
+# PRODUCTION DEPLOYMENT
+# ===============================================================================
+# Production server and deployment
+gunicorn==23.0.0
+supervisor==4.2.5
+
+# Monitoring and health checks
+psutil==6.1.0
+watchdog==6.0.0
+
+#ml
+# Uncomment if using ML features
+# tensorflow==2.18.0
+# torch==2.5.1
+# transformers==4.46.2
+# lightgbm==4.5.0
+# xgboost==2.1.2

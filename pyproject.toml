@@ -1,0 +1,187 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hedgevision"
+version = "0.1.0"
+description = "HedgeVision statistical arbitrage platform"
+readme = "README.md"
+requires-python = ">=3.10"
+
+# ---------------------------------------------------------------------------
+# Core runtime dependencies — exact pins for reproducible builds
+# ---------------------------------------------------------------------------
+dependencies = [
+  # --- Web framework ---
+  "fastapi==0.135.1",
+  "uvicorn[standard]==0.41.0",
+  "gunicorn==23.0.0",
+  "pydantic==2.12.5",
+  "pydantic-settings==2.6.0",
+  "python-dotenv==1.0.1",
+
+  # --- HTTP ---
+  "httpx==0.27.2",
+  "requests==2.32.3",
+  "aiohttp>=3.10.6,<4.0.0",
+
+  # --- Database ---
+  "supabase==2.8.0",
+  "postgrest==0.17.0",
+  "storage3==0.7.7",
+  "gotrue==2.12.4",
+  "sqlalchemy==2.0.35",
+  "alembic==1.13.3",
+  "psycopg2-binary==2.9.9",
+
+  # --- Analytics ---
+  "pandas==2.2.3",
+  "numpy>=1.22.4,<2.3",
+  "scipy==1.15.2",
+  "statsmodels==0.14.4",
+  "scikit-learn==1.5.2",
+  "yfinance==0.2.66",
+  "arch==7.1.0",
+
+  # --- Utilities ---
+  "python-dateutil==2.9.0",
+  "pytz==2024.2",
+  "croniter==3.0.3",
+  "typer==0.12.5",
+  "rich==13.9.2",
+  "click==8.1.7",
+  "openpyxl==3.1.5",
+  "xlsxwriter==3.2.0",
+  "lxml==5.3.0",
+  "beautifulsoup4==4.12.3",
+
+  # --- Security ---
+  "email-validator==2.2.0",
+  "pyjwt>=2.10.1,<3.0.0",
+  "passlib==1.7.4",
+  "bcrypt==4.2.0",
+  "cryptography==43.0.3",
+
+  # --- Caching ---
+  "redis==5.2.1",
+
+  # --- Monitoring ---
+  "loguru==0.7.2",
+  "structlog==24.4.0",
+  "prometheus-client==0.21.1",
+  "psutil==6.1.0",
+
+  # --- MCP ---
+  "mcp==1.26.0",
+  "sse-starlette==3.3.2",
+]
+
+# ---------------------------------------------------------------------------
+# Optional dependency groups
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+
+# News & sentiment analysis
+news = [
+  "newspaper3k",
+  "vaderSentiment",
+  "feedparser==6.0.11",
+]
+
+# Crypto exchange connectors
+crypto = [
+  "ccxt==4.4.4",
+  "python-binance==1.0.19",
+  "alpha-vantage==2.3.1",
+]
+
+# LLM / AI audit features
+llm = [
+  "langchain==0.3.7",
+  "langchain-openai==0.2.9",
+  "langchain-anthropic==0.2.4",
+  "langchain-community==0.3.7",
+  "langchain-core>=0.3.17,<0.4.0",
+  "tiktoken==0.8.0",
+  "openai==1.54.5",
+  "anthropic==0.39.0",
+  "langgraph",
+]
+
+# Development & testing
+dev = [
+  "pytest==8.3.4",
+  "pytest-asyncio==0.24.0",
+  "pytest-cov==6.0.0",
+  "pytest-mock==3.14.0",
+  "pytest-xdist==3.6.0",
+  "pytest-benchmark==4.0.0",
+  "factory-boy==3.3.1",
+  "black==24.10.0",
+  "isort==5.13.2",
+  "flake8==7.1.1",
+  "mypy==1.13.0",
+  "pre-commit==4.0.1",
+  "memory-profiler==0.61.0",
+  "line-profiler==4.1.3",
+  "py-spy==0.3.14",
+  "supervisor==4.2.5",
+  "watchdog==6.0.0",
+]
+
+# Everything (local development with all features)
+all = [
+  "hedgevision[news,crypto,llm,dev]",
+]
+
+[project.scripts]
+hedgevision-cli = "hedgevision.cli:main"
+
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["hedgevision*"]

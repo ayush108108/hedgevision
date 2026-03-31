@@ -1,0 +1,84 @@
+# docker-compose.prod.yml — Production overrides
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  backend:
+    environment:
+      - DATA_BACKEND=supabase
+      - API_DEBUG=false
+      - WEB_CONCURRENCY=4
+      - GUNICORN_TIMEOUT=120
+      - LOG_LEVEL=warning
+    env_file:
+      - backend/api/.env
+    volumes: []
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+    security_opt:
+      - no-new-privileges:true
+
+  frontend:
+    build:
+      args:
+        VITE_API_BASE_URL: ${PROD_API_URL:-https://api.hedgevision.app}
+        VITE_FEATURE_PORTFOLIO: "true"
+        VITE_FEATURE_NEWS: "true"
+        VITE_FEATURE_WATCHLIST: "true"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.1"
+          memory: 32M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=50M
+      - /var/run:size=1M
+      - /tmp:size=10M
+    security_opt:
+      - no-new-privileges:true
+
+  redis:
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --save 300 100
+    ports: []
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 60s
+    security_opt:
+      - no-new-privileges:true

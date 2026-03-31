@@ -1,0 +1,59 @@
+/* assets/heatmap_styles.css */
+/* Styles for AG Grid Correlation Heatmap */
+
+/* Strong Negative Correlation */
+.corr-strong-negative {
+    background-color: #313695 !important; /* Corresponds to v <= -0.75 */
+    color: #ffffff !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+/* Moderate Negative Correlation */
+.corr-moderate-negative {
+    background-color: #74add1 !important; /* Corresponds to -0.75 < v <= -0.25 */
+    color: #000000 !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+/* Neutral Correlation */
+.corr-neutral {
+    background-color: #f7f7f7 !important; /* Corresponds to -0.25 < v <= 0.25 */
+    color: #000000 !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+/* Moderate Positive Correlation */
+.corr-moderate-positive {
+    background-color: #f46d43 !important; /* Corresponds to 0.25 < v <= 0.75 */
+    color: #000000 !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+/* Strong Positive Correlation */
+.corr-strong-positive {
+    background-color: #67001f !important; /* Corresponds to v > 0.75 */
+    color: #ffffff !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+/* Style for diagonal cells (value is 1 or None/NaN if self-correlation is handled that way) */
+/* You might want a specific style if diagonal cells are shown and are always 1.0 */
+.corr-diagonal {
+    /* Example: slightly different background or just bold text */
+    /* background-color: #e0e0e0 !important; */
+    /* color: #000000 !important; */
+    text-align: center !important;
+    font-weight: 500 !important; /* Keep consistent font weight */
+}
+
+/* Ensure cells with no data or non-numeric don't get styled if not caught by 'None' */
+/* This is a fallback, primary handling is in the Python logic for None values */
+.ag-cell:not(.corr-strong-negative):not(.corr-moderate-negative):not(.corr-neutral):not(.corr-moderate-positive):not(.corr-strong-positive):not(.corr-diagonal) {
+    text-align: center !important;
+    font-weight: 500 !important;
+} 

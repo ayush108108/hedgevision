@@ -1,0 +1,144 @@
+# STATARB TRADING ENGINE - MASTER ASSET UNIVERSE
+# Version: 2.0
+# Last Updated: 2025-12-03
+
+# -----------------------------------------------------------------------------
+# SECTION A: CORE TRADING UNIVERSE (The Profit Engine)
+# -----------------------------------------------------------------------------
+# Criteria: Top Liquidity, Binance Futures USDT-M Available, >$50M daily volume.
+# Source: CCXT (Binance)
+# Logic: Real-time Ingestion (WS/REST), Active Trading, Feature Engineering.
+
+crypto_core:
+  layer1_majors:
+    - BTC-USD
+    - ETH-USD
+    - SOL-USD
+    - BNB-USD
+    - ADA-USD
+    - XRP-USD
+    - AVAX-USD
+    - DOT-USD
+    - TRX-USD
+    - NEAR-USD
+    - ATOM-USD
+    
+  layer1_alts:
+    - SUI-USD
+    - APT-USD
+    - SEI-USD
+    - TIA-USD
+    - KAS-USD
+    - FTM-USD
+    - INJ-USD
+    - HBAR-USD
+    - ALGO-USD
+    
+  l2_scaling:
+    - ARB-USD
+    - OP-USD
+    - MATIC-USD
+    - IMX-USD
+    - STRK-USD
+    - MANTLE-USD
+    - STX-USD
+    
+  defi_bluechip:
+    - UNI-USD
+    - AAVE-USD
+    - MKR-USD
+    - LINK-USD
+    - SNX-USD
+    - CRV-USD
+    - LDO-USD
+    
+  defi_perps_dex:
+    - DYDX-USD
+    - GMX-USD
+    - JUP-USD
+    - RUNE-USD
+    - PYTH-USD
+    - ENA-USD
+    
+  ai_compute:
+    - RNDR-USD
+    - FET-USD
+    - AGIX-USD
+    - GRT-USD
+    - WLD-USD
+    - OCEAN-USD
+    
+  memes_liquid:
+    - DOGE-USD
+    - SHIB-USD
+    - PEPE-USD
+    - WIF-USD
+    - BONK-USD
+    - FLOKI-USD
+    
+  legacy_payment:
+    - LTC-USD
+    - BCH-USD
+    - ETC-USD
+    - XLM-USD
+
+# -----------------------------------------------------------------------------
+# SECTION B: MACRO MONITORING UNIVERSE (The Dashboard)
+# -----------------------------------------------------------------------------
+# Criteria: Global benchmarks representing major asset classes.
+# Source: yfinance (Yahoo Finance)
+# Logic: End-of-Day or 15m delayed ingestion. Used for correlation & regime detection.
+
+macro_monitor:
+  equities_us:
+    - SPY      # S&P 500 (Risk Baseline)
+    - QQQ      # Nasdaq 100 (Tech Correlation)
+    - IWM      # Russell 2000 (Small Cap/Risk On)
+    - NVDA     # AI Proxy (Leading Indicator)
+    - MSTR     # Corp Bitcoin Proxy
+    - COIN     # Crypto Exchange Proxy
+    - VXX      # Volatility Index (Fear Gauge)
+    
+  equities_global:
+    - EEM      # Emerging Markets
+    - KWEB     # China Tech
+    
+  commodities:
+    - GLD      # Gold (Inflation/Fear)
+    - SLV      # Silver (High Beta Metal)
+    - USO      # Oil (Growth/Inflation)
+    - UNG      # Natural Gas
+    - DBA      # Agriculture
+    - CPER     # Copper (Economic Health)
+    - LIT      # Lithium (Battery Tech)
+    
+  forex_rates:
+    - UUP      # US Dollar Index (Bullish ETF)
+    - FXE      # Euro Trust
+    - FXY      # Japanese Yen Trust
+    - TLT      # 20+ Year Treasury Bond
+    - HYG      # High Yield Corp Bond (Junk)
+
+  canaries:    # "Coal Mine" indicators for specific risks
+    - USDT-USD # Tether Peg
+    - USDC-USD # USDC Peg
+    - ARKK     # Speculative Tech Sentiment
+    - TSLA     # Retail Sentiment Leader
+
+# -----------------------------------------------------------------------------
+# SECTION C: GAP DETECTION UNIVERSE (The Magnets)
+# -----------------------------------------------------------------------------
+# Criteria: Assets with hard open/close times (CME, NYSE).
+# Source: yfinance
+# Logic: Ingest Prev Close vs Current Open. "Gap Fill" strategies.
+
+gap_assets:
+  cme_crypto:
+    - BTC=F    # CME Bitcoin Futures
+    - ETH=F    # CME Ether Futures
+    
+  tradfi_futures:
+    - ES=F     # S&P 500 E-mini
+    - NQ=F     # Nasdaq 100 E-mini
+    - GC=F     # Gold Futures
+    - CL=F     # Crude Oil Futures

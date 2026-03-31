@@ -1,0 +1,100 @@
+# ==============================================================================
+# .dockerignore — HedgeVision
+# ==============================================================================
+
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+backend/.venv/
+
+# Environment files (inject via env_file / environment in compose)
+.env
+.env.*
+!.env.example
+backend/api/.env
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+coverage.json
+htmlcov/
+tests/
+.benchmarks/
+.mypy_cache/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Frontend (backend builds don't need these; frontend has its own context)
+frontend-v2/node_modules/
+frontend-v2/dist/
+frontend-v2/build/
+frontend-v2/coverage/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+.gemini/
+*.swp
+*.swo
+*~
+
+# Database files (volumes handle persistence)
+*.db
+*.sqlite
+*.sqlite3
+dump.rdb
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker meta
+docker-compose.override.yml
+Dockerfile.dev
+
+# Scripts not needed at runtime
+scripts/debug/
+scripts/setup/
+scripts/etl/
+tools/
+holiday_data/
+
+# Misc
+CLAUDE.md
+CONTRIBUTING.md
+Procfile
+app.json
+runtime.txt
+*.tmp
+*.temp
+*.bak
+temp_*
+debug_*
+backups/

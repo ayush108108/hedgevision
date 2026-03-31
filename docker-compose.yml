@@ -1,0 +1,88 @@
+# docker-compose.yml — HedgeVision local development
+# Usage: docker compose up -d
+
+services:
+  # ================================================================
+  # Backend API (FastAPI + Gunicorn)
+  # ================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hedgevision-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_BACKEND=sqlite
+      - DB_PATH=/app/data/prices.db
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_DEBUG=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:5173
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WEB_CONCURRENCY=1
+      - ENABLE_EXTERNAL_LLM=false
+      - BROKER_BACKEND=paper
+      - MODEL_VERSION=dev
+    volumes:
+      - hedgevision-data:/app/data
+      - ./config:/app/config:ro
+    networks:
+      - hedgevision
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+  # ================================================================
+  # Frontend (Nginx serving Vite SPA)
+  # ================================================================
+  frontend:
+    build:
+      context: ./frontend-v2
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    container_name: hedgevision-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - hedgevision
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ================================================================
+  # Redis (optional — backend degrades to in-memory cache without it)
+  # ================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: hedgevision-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - hedgevision-redis:/data
+    networks:
+      - hedgevision
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  hedgevision-data:
+  hedgevision-redis:
+
+networks:
+  hedgevision:
+    driver: bridge

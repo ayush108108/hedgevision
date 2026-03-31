@@ -1,0 +1,15 @@
+.synced-charts-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.synced-price-chart {
+  width: 100%;
+  flex: 1;
+}
+
+.synced-spread-chart {
+  width: 100%;
+  flex: 1;
+}
