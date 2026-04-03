@@ -1,8 +1,0 @@
-{
-  "name": "hedgevision-monorepo",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "cd frontend-v2 && npm install && npm run build"
-  }
-}
