@@ -1,263 +1,252 @@
 # ==============================================================================
-# HedgeVision — Unified Makefile (Local + Docker)
+# HedgeVision — Makefile  (Single Source of Truth)
 # ==============================================================================
-# Quick Start:
-#   make install       # Install Python + Node dependencies
-#   make dev           # Start backend + frontend in dev mode
-#   make test          # Run all tests
-#   make lint          # Lint and format all code
+#
+#  Local (no Docker):       make install && make dev
+#  Docker:                  make up
+#  Quick start from zero:   make quickstart
+#
 # ==============================================================================
 
-.PHONY: help install dev clean test lint format \
-        backend frontend backend-dev frontend-dev \
-        db-init db-status db-reset db-sync \
-        build up down logs restart shell health \
-        build-backend build-frontend up-prod down-prod
+.PHONY: help quickstart \
+        install install-python install-node \
+        dev backend-dev frontend-dev \
+        db-init db-bootstrap db-status db-reset db-sync \
+        test test-python test-frontend test-coverage \
+        lint lint-python lint-frontend format format-python format-frontend \
+        clean clean-python clean-node \
+        build up down logs restart shell health status \
+        build-backend build-frontend build-prod build-no-cache \
+        up-attached up-prod down-prod down-volumes \
+        logs-backend logs-frontend logs-redis \
+        restart-backend restart-frontend shell-frontend \
+        docker-clean check-ports stop
 
-# ========================= Help & Info =========================
+# ========================= Variables =========================
+
+PYTHON       ?= python3
+PIP          ?= pip
+NPM          ?= npm
+COMPOSE      := docker compose
+COMPOSE_PROD := $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml
+BACKEND_PORT ?= 8000
+FRONTEND_PORT?= 3000
+
+# ========================= Help =========================
 
 help: ## Show available commands
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "  HedgeVision - Statistical Arbitrage Platform"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo ""
-	@echo "🚀 Quick Start:"
-	@echo "  make install    - Install all dependencies"
-	@echo "  make dev        - Start backend + frontend"
-	@echo "  make test       - Run test suite"
-	@echo ""
-	@echo "📋 All Commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
-	@echo ""
+@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+@echo "  HedgeVision — Statistical Arbitrage Platform"
+@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+@echo ""
+@echo "Quick start (no Docker):"
+@echo "  make quickstart       Install deps + seed DB + launch"
+@echo ""
+@echo "Quick start (Docker):"
+@echo "  make up               Build & start all containers"
+@echo ""
+@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+@echo ""
+
+# ========================= Quick Start =========================
+
+quickstart: install db-init db-bootstrap dev ## One-command setup: install, seed DB, start
 
 # ========================= Installation =========================
 
-install: install-python install-node ## Install all dependencies (Python + Node)
-	@echo "✅ All dependencies installed. Run 'make dev' to start."
+install: install-python install-node ## Install all dependencies
 
-install-python: ## Install Python dependencies
-	@echo "📦 Installing Python dependencies..."
-	pip install -e ".[all]"
-	@echo "✅ Python dependencies installed."
+install-python: ## Install Python deps (editable)
+$(PIP) install -e ".[all]"
 
-install-node: ## Install Node dependencies
-	@echo "📦 Installing Node dependencies..."
-	cd frontend-v2 && npm install
-	@echo "✅ Node dependencies installed."
+install-node: ## Install Node deps
+cd frontend-v2 && $(NPM) install
 
-# ========================= Development =========================
+# ========================= Development (local, no Docker) =========================
 
-dev: ## Start backend + frontend in parallel (Ctrl+C to stop both)
-	@echo "🚀 Starting HedgeVision in development mode..."
-	@echo "   Backend:  http://localhost:8000"
-	@echo "   Frontend: http://localhost:3000"
-	@echo "   Docs:     http://localhost:8000/docs"
-	@echo ""
-	@trap 'kill 0' EXIT; \
-	$(MAKE) backend-dev & \
-	$(MAKE) frontend-dev & \
-	wait
+dev: check-ports ## Start backend + frontend locally (Ctrl+C stops both)
+@echo "Backend:  http://localhost:$(BACKEND_PORT)"
+@echo "Frontend: http://localhost:$(FRONTEND_PORT)"
+@echo "API docs: http://localhost:$(BACKEND_PORT)/docs"
+@echo ""
+@trap 'kill 0' EXIT; \
+$(MAKE) backend-dev & \
+$(MAKE) frontend-dev & \
+wait
 
-backend-dev: ## Start backend API server (FastAPI)
-	@echo "🔧 Starting backend on http://localhost:8000 ..."
-	uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
+backend-dev: ## Start FastAPI dev server
+uvicorn backend.api.main:app --reload --host 0.0.0.0 --port $(BACKEND_PORT)
 
-frontend-dev: ## Start frontend dev server (Vite)
-	@echo "🎨 Starting frontend on http://localhost:3000 ..."
-	cd frontend-v2 && npm run dev
+frontend-dev: ## Start Vite dev server
+cd frontend-v2 && $(NPM) run dev
 
-backend: backend-dev ## Alias for backend-dev
-frontend: frontend-dev ## Alias for frontend-dev
+backend: backend-dev
+frontend: frontend-dev
 
-# ========================= Database =========================
+check-ports: ## Ensure dev ports are free
+@if lsof -i :$(BACKEND_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
+echo "ERROR: Port $(BACKEND_PORT) is already in use."; \
+echo "  Run:  make stop  or  kill $$(lsof -ti :$(BACKEND_PORT))"; \
+exit 1; \
+fi
 
-db-init: ## Initialize SQLite database schema
-	@echo "🗄️  Initializing database..."
-	python scripts/setup/init_db.py
-	@echo "✅ Database initialized."
+stop: ## Kill local dev servers occupying app ports
+@-kill $$(lsof -ti :$(BACKEND_PORT)) 2>/dev/null || true
+@-kill $$(lsof -ti :$(FRONTEND_PORT)) 2>/dev/null || true
+@echo "Ports freed."
 
-db-status: ## Check database status
-	@echo "📊 Database Status:"
-	sqlite3 backend/prices.db "SELECT name FROM sqlite_master WHERE type='table';" | head -10
-	@echo ""
-	@echo "Asset count:"
-	sqlite3 backend/prices.db "SELECT COUNT(*) FROM assets;"
-	@echo "Price history records:"
-	sqlite3 backend/prices.db "SELECT COUNT(*) FROM price_history;"
+# ========================= Database (SQLite) =========================
 
-db-reset: ## Reset database (⚠️  WARNING: Deletes all data)
-	@echo "⚠️  Resetting database..."
-	@read -p "Are you sure? This will delete all data. [y/N] " confirm; \
-	if [ "$$confirm" = "y" ]; then \
-		rm -f backend/prices.db; \
-		python scripts/setup/init_db.py; \
-		echo "✅ Database reset complete."; \
-	else \
-		echo "❌ Cancelled."; \
-	fi
+db-init: ## Create SQLite schema (safe to re-run)
+$(PYTHON) scripts/setup/init_db.py
 
-db-sync: ## Sync latest market data
-	@echo "📈 Syncing market data..."
-	hedgevision-cli sync
-	@echo "✅ Sync complete."
+db-bootstrap: ## Seed 2 years of market data + metrics
+$(PYTHON) scripts/bootstrap_local_data.py
 
-# ========================= Testing =========================
+db-status: ## Show DB tables and row counts
+@$(PYTHON) -c "\
+import sqlite3, os; \
+p = os.environ.get('DB_PATH', 'backend/prices.db'); \
+c = sqlite3.connect(p); \
+tables = [r[0] for r in c.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()]; \
+[print(f'{t}: {c.execute(f\"SELECT COUNT(*) FROM {t}\").fetchone()[0]}') for t in tables]; \
+r = c.execute('SELECT MIN(timestamp), MAX(timestamp) FROM price_history').fetchone(); \
+print(f'date range: {r[0]} -> {r[1]}') if r[0] else print('(empty)')"
 
-test: test-python test-frontend ## Run all tests (Python + Frontend)
+db-reset: ## Reset database (WARNING: deletes all data)
+@read -p "Delete all data and recreate? [y/N] " confirm; \
+if [ "$$confirm" = "y" ]; then \
+rm -f backend/prices.db; \
+$(MAKE) db-init; \
+echo "Database reset. Run 'make db-bootstrap' to re-seed."; \
+else \
+echo "Cancelled."; \
+fi
 
-test-python: ## Run Python tests
-	@echo "🧪 Running Python tests..."
-	pytest tests/ -v --cov=hedgevision --cov-report=term-missing
+db-sync: ## Fetch latest market data
+hedgevision-cli sync
+
+# ========================= Tests =========================
+
+test: test-python test-frontend ## Run all tests
+
+test-python: ## Run Python tests with coverage
+pytest tests/ -v --cov=hedgevision --cov-report=term-missing
 
 test-frontend: ## Run frontend tests
-	@echo "🧪 Running frontend tests..."
-	cd frontend-v2 && npm test
+cd frontend-v2 && $(NPM) test
 
-test-coverage: ## Generate test coverage report
-	@echo "📊 Generating coverage report..."
-	pytest tests/ --cov=hedgevision --cov-report=html
-	@echo "✅ Coverage report: htmlcov/index.html"
+test-coverage: ## HTML coverage report
+pytest tests/ --cov=hedgevision --cov-report=html
+@echo "Report: htmlcov/index.html"
 
-# ========================= Linting & Formatting =========================
+# ========================= Lint & Format =========================
 
 lint: lint-python lint-frontend ## Lint all code
 
-lint-python: ## Lint Python code
-	@echo "🔍 Linting Python..."
-	black --check --line-length 100 .
-	isort --check --profile black --line-length 100 .
-	flake8 hedgevision backend tests
-	@echo "✅ Python linting passed."
+lint-python: ## Lint Python (black + isort + flake8)
+black --check --line-length 100 .
+isort --check --profile black --line-length 100 .
+flake8 hedgevision backend tests
 
-lint-frontend: ## Lint frontend code
-	@echo "🔍 Linting frontend..."
-	cd frontend-v2 && npm run lint
-	@echo "✅ Frontend linting passed."
+lint-frontend: ## Lint frontend (eslint)
+cd frontend-v2 && $(NPM) run lint
 
-format: format-python format-frontend ## Format all code
+format: format-python format-frontend ## Auto-format all code
 
-format-python: ## Format Python code with Black + isort
-	@echo "🎨 Formatting Python..."
-	black --line-length 100 .
-	isort --profile black --line-length 100 .
-	@echo "✅ Python formatted."
+format-python: ## Format Python (black + isort)
+black --line-length 100 .
+isort --profile black --line-length 100 .
 
-format-frontend: ## Format frontend code
-	@echo "🎨 Formatting frontend..."
-	cd frontend-v2 && npm run lint -- --fix
-	@echo "✅ Frontend formatted."
+format-frontend: ## Format frontend
+cd frontend-v2 && $(NPM) run lint -- --fix
 
-# ========================= Cleanup =========================
+# ========================= Clean =========================
 
-clean: clean-python clean-node ## Clean all build artifacts
+clean: clean-python clean-node ## Remove build artifacts
 
-clean-python: ## Clean Python cache and build files
-	@echo "🧹 Cleaning Python artifacts..."
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete
-	find . -type f -name "*.pyo" -delete
-	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	rm -rf .pytest_cache dist build htmlcov .coverage
-	@echo "✅ Python artifacts cleaned."
+clean-python:
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+find . -type f -name "*.pyc" -delete 2>/dev/null || true
+rm -rf .pytest_cache dist build htmlcov .coverage *.egg-info
 
-clean-node: ## Clean Node modules and build files
-	@echo "🧹 Cleaning Node artifacts..."
-	rm -rf frontend-v2/node_modules frontend-v2/dist frontend-v2/.vite
-	@echo "✅ Node artifacts cleaned."
+clean-node:
+rm -rf frontend-v2/node_modules frontend-v2/dist frontend-v2/.vite
 
-# ========================= Docker Commands =========================
+# ========================= Docker =========================
 
-COMPOSE       := docker compose
-COMPOSE_PROD  := $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml
+build: ## Build all Docker images
+$(COMPOSE) build
 
-docker-help: ## Show Docker-specific commands
-	@echo "🐳 Docker Commands:"
-	@grep -E '^(build|up|down|logs|restart|shell|health|docker-).*:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+build-backend: ## Build backend image
+$(COMPOSE) build backend
 
-# ========================= Build =========================
+build-frontend: ## Build frontend image
+$(COMPOSE) build frontend
 
-build: ## Build all Docker containers
-	$(COMPOSE) build
+build-prod: ## Build production images
+$(COMPOSE_PROD) build
 
-build-backend: ## Build backend Docker container only
-	$(COMPOSE) build backend
+build-no-cache: ## Build without cache
+$(COMPOSE) build --no-cache
 
-build-frontend: ## Build frontend Docker container only
-	$(COMPOSE) build frontend
+up: ## Start all services (Docker, detached)
+$(COMPOSE) up -d
 
-build-prod: ## Build for production
-	$(COMPOSE_PROD) build
-
-build-no-cache: ## Build without layer cache
-	$(COMPOSE) build --no-cache
-
-# ========================= Docker Run =========================
-
-up: ## Start all Docker services (detached)
-	$(COMPOSE) up -d
-
-up-attached: ## Start all Docker services (foreground)
-	$(COMPOSE) up
+up-attached: ## Start all services (foreground)
+$(COMPOSE) up
 
 up-prod: ## Start in production mode
-	$(COMPOSE_PROD) up -d
+$(COMPOSE_PROD) up -d
 
-# ========================= Docker Stop =========================
-
-down: ## Stop all Docker services
-	$(COMPOSE) down
+down: ## Stop all services
+$(COMPOSE) down
 
 down-prod: ## Stop production services
-	$(COMPOSE_PROD) down
+$(COMPOSE_PROD) down
 
-down-volumes: ## Stop and remove volumes (⚠️  deletes data)
-	$(COMPOSE) down -v
-
-# ========================= Docker Logs =========================
+down-volumes: ## Stop and delete volumes (WARNING: data loss)
+$(COMPOSE) down -v
 
 logs: ## Tail all container logs
-	$(COMPOSE) logs -f
+$(COMPOSE) logs -f
 
-logs-backend: ## Tail backend logs
-	$(COMPOSE) logs -f backend
+logs-backend:
+$(COMPOSE) logs -f backend
 
-logs-frontend: ## Tail frontend logs
-	$(COMPOSE) logs -f frontend
+logs-frontend:
+$(COMPOSE) logs -f frontend
 
-logs-redis: ## Tail Redis logs
-	$(COMPOSE) logs -f redis
+logs-redis:
+$(COMPOSE) logs -f redis
 
-# ========================= Docker Management =========================
+restart: ## Restart all containers
+$(COMPOSE) restart
 
-restart: ## Restart all services
-	$(COMPOSE) restart
+restart-backend:
+$(COMPOSE) restart backend
 
-restart-backend: ## Restart backend only
-	$(COMPOSE) restart backend
+restart-frontend:
+$(COMPOSE) restart frontend
 
-restart-frontend: ## Restart frontend only
-	$(COMPOSE) restart frontend
+shell: ## Shell into backend container
+$(COMPOSE) exec backend /bin/bash
 
-shell: ## Open shell in backend container
-	$(COMPOSE) exec backend /bin/bash
+shell-frontend:
+$(COMPOSE) exec frontend /bin/sh
 
-shell-frontend: ## Open shell in frontend container
-	$(COMPOSE) exec frontend /bin/sh
-
-status: ## Show running containers
-	$(COMPOSE) ps
+status: ## Show container status
+$(COMPOSE) ps
 
 health: ## Check service health
-	@echo "🏥 Checking service health..."
-	@curl -sf http://localhost:8000/health || echo "❌ Backend unreachable"
-	@curl -sf http://localhost:3000/ > /dev/null && echo "✅ Frontend healthy" || echo "❌ Frontend unreachable"
+@curl -sf http://localhost:$(BACKEND_PORT)/health && echo " Backend OK" || echo "Backend unreachable"
+@curl -sf http://localhost:$(FRONTEND_PORT)/ >/dev/null && echo "Frontend OK" || echo "Frontend unreachable"
 
-docker-clean: ## Stop containers and clean Docker artifacts
-	$(COMPOSE) down -v --remove-orphans
-	docker system prune -f
+docker-clean: ## Stop containers + prune Docker artifacts
+$(COMPOSE) down -v --remove-orphans
+docker system prune -f
 
-# ========================= End =========================
+# ========================= Default =========================
 
 .DEFAULT_GOAL := help

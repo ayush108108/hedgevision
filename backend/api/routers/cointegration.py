@@ -6,6 +6,8 @@ and trading signal generation.
 """
 
 import logging
+import json
+import sqlite3
 from datetime import datetime, timedelta
 from typing import List, Optional, Any
 
@@ -85,6 +87,16 @@ router = APIRouter(prefix="/cointegration", tags=["Cointegration"])
 cointegration_service = CointegrationService()
 cache = get_cache_adapter(default_ttl=config.get("REDIS_TTL", 3600))
 supabase = get_supabase_client()
+
+
+def _candidate_symbols(symbol: str) -> list[str]:
+    """Return likely local symbol variants for SQLite lookups."""
+    candidates = [symbol]
+    if symbol.endswith(".CC"):
+        candidates.append(symbol[:-3])
+    if symbol.endswith(".US"):
+        candidates.append(symbol[:-3])
+    return list(dict.fromkeys(candidates))
 
 
 # ============================================================================
@@ -711,6 +723,45 @@ async def _fetch_price_data(
 
     try:
         table = "price_history" if granularity == "daily" else "intraday_price_history"
+        data_backend = str(config.get("DATA_BACKEND", "sqlite")).lower()
+        start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
+        end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
+
+        if data_backend == "sqlite":
+            db_path = str(config.get("DB_PATH", "backend/prices.db"))
+            sqlite_table = "price_history" if granularity == "daily" else "prices_hourly"
+            with sqlite3.connect(db_path, timeout=5.0) as conn:
+                conn.row_factory = sqlite3.Row
+                asset_row = None
+                for candidate in _candidate_symbols(symbol):
+                    asset_row = conn.execute(
+                        "SELECT id FROM assets WHERE symbol = ? LIMIT 1",
+                        (candidate,),
+                    ).fetchone()
+                    if asset_row:
+                        break
+                if not asset_row:
+                    return pd.DataFrame()
+
+                rows = conn.execute(
+                    f"""
+                    SELECT timestamp, open, high, low, close, volume
+                    FROM {sqlite_table}
+                    WHERE asset_id = ?
+                      AND timestamp >= ?
+                      AND timestamp <= ?
+                    ORDER BY timestamp
+                    """,
+                    (int(asset_row[0]), start_iso, end_iso),
+                ).fetchall()
+
+            if not rows:
+                return pd.DataFrame()
+
+            df = pd.DataFrame([dict(row) for row in rows])
+            df["date"] = pd.to_datetime(df["timestamp"], utc=True)
+            df["symbol"] = symbol
+            return df
 
         # Get asset_id
         if not supabase:
@@ -727,10 +778,6 @@ async def _fetch_price_data(
             return pd.DataFrame()
 
         asset_id = asset_response.data["id"]
-
-        # Normalize query bounds
-        start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
-        end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
 
         # Fetch price data
         price_response = (
@@ -780,6 +827,66 @@ async def _store_test_result(result, max_retries: int = 3) -> str:
         Exception: If all retry attempts fail
     """
     import time
+
+    if str(config.get("DATA_BACKEND", "sqlite")).lower() == "sqlite":
+        db_path = str(config.get("DB_PATH", "backend/prices.db"))
+        with sqlite3.connect(db_path, timeout=5.0) as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS cointegration_scores (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    asset1_symbol TEXT NOT NULL,
+                    asset2_symbol TEXT NOT NULL,
+                    test_date TEXT NOT NULL,
+                    granularity TEXT NOT NULL,
+                    lookback_days INTEGER,
+                    overall_score REAL,
+                    eg_is_cointegrated INTEGER,
+                    eg_pvalue REAL,
+                    beta_coefficient REAL,
+                    half_life_days REAL,
+                    sharpe_ratio REAL,
+                    test_results TEXT,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    UNIQUE(asset1_symbol, asset2_symbol, test_date, granularity)
+                )
+                """
+            )
+
+            payload = {
+                "sample_size": convert_value(result.sample_size),
+                "pearson_correlation": convert_value(result.pearson_correlation),
+                "spearman_correlation": convert_value(result.spearman_correlation),
+                "overall_score": convert_value(result.overall_score),
+                "cointegration_strength": result.cointegration_strength,
+                "trading_suitability": result.trading_suitability,
+                "risk_level": result.risk_level,
+            }
+
+            cursor = conn.execute(
+                """
+                INSERT OR REPLACE INTO cointegration_scores (
+                    asset1_symbol, asset2_symbol, test_date, granularity, lookback_days,
+                    overall_score, eg_is_cointegrated, eg_pvalue, beta_coefficient,
+                    half_life_days, sharpe_ratio, test_results
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    result.asset1_symbol,
+                    result.asset2_symbol,
+                    result.test_date,
+                    result.granularity,
+                    int(convert_value(result.lookback_days) or 0),
+                    float(convert_value(result.overall_score) or 0.0),
+                    1 if bool(convert_value(result.eg_is_cointegrated)) else 0,
+                    float(convert_value(result.eg_pvalue) or 0.0),
+                    float(convert_value(result.beta_coefficient) or 0.0),
+                    float(convert_value(result.half_life_days) or 0.0),
+                    float(convert_value(result.sharpe_ratio) or 0.0) if convert_value(result.sharpe_ratio) is not None else None,
+                    json.dumps(payload),
+                ),
+            )
+            return str(cursor.lastrowid)
 
     # Main storage logic with comprehensive error handling
     try:

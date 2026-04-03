@@ -274,3 +274,20 @@ backend/code_index.json
 .do/app.redis.temp.yaml
 .do/*.temp.yaml
 .do/app.export.yaml
+
+# Ad-hoc report/status docs
+*_REPORT.md
+*_STATUS.md
+
+# AI agent artifacts
+skills-lock.json
+
+# SQLite WAL files
+*.db-shm
+*.db-wal
+
+# Screenshots / previews
+readme_previews/
+
+# Holiday data (non-functional stubs)
+holiday_data/

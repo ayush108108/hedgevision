@@ -6,7 +6,7 @@ We take security seriously. If you discover a security vulnerability in HedgeVis
 
 ### How to Report
 
-1. **Email**: Send a detailed description of the vulnerability to [security contact] with:
+1. **Email**: Send a detailed description of the vulnerability to **security@hedgevision.app** (or open a private security advisory on GitHub) with:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact

@@ -1,9 +1,11 @@
 """Pair screener endpoints that query pre-computed results via dedicated services."""
 
 import logging
+import sqlite3
 from typing import Any, Dict, List, Literal, Optional
 
 from api.services import analytics_service
+from api.utils.config import config
 from fastapi import APIRouter, Body, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -300,8 +302,91 @@ async def get_cointegration_screener_pairs(
     try:
         supabase = get_supabase_client()
         if supabase is None:
-            logger.error("Supabase client not initialized for cointegration screener")
-            raise HTTPException(status_code=503, detail="Supabase unavailable")
+            db_path = str(config.get("DB_PATH", "backend/prices.db"))
+            try:
+                with sqlite3.connect(db_path, timeout=5.0) as conn:
+                    conn.row_factory = sqlite3.Row
+                    rows = conn.execute(
+                        """
+                        SELECT asset1_symbol, asset2_symbol, test_date, overall_score,
+                               eg_pvalue, eg_is_cointegrated, beta_coefficient,
+                               half_life_days, sharpe_ratio
+                        FROM cointegration_scores
+                        WHERE granularity = ? AND overall_score >= ?
+                        ORDER BY overall_score DESC
+                        LIMIT ?
+                        """,
+                        (granularity, min_score, limit),
+                    ).fetchall()
+            except sqlite3.OperationalError:
+                rows = []
+
+            unified_pairs: List[UnifiedScreenerPair] = []
+            for row in rows:
+                primary_value = float(row["overall_score"] or 0.0)
+                half_life = float(row["half_life_days"] or 0.0)
+                pvalue = float(row["eg_pvalue"] or 1.0)
+
+                if primary_value >= 85:
+                    strength = "strong"
+                elif primary_value >= 70:
+                    strength = "moderate"
+                else:
+                    strength = "weak"
+
+                if primary_value >= 85 and 2 <= half_life <= 10:
+                    suitability = "excellent"
+                elif primary_value >= 70:
+                    suitability = "good"
+                elif primary_value >= 60:
+                    suitability = "fair"
+                else:
+                    suitability = "poor"
+
+                if pvalue < 0.01 and half_life < 15:
+                    risk = "low"
+                elif pvalue < 0.05:
+                    risk = "medium"
+                else:
+                    risk = "high"
+
+                item = UnifiedScreenerPair(
+                    asset1=str(row["asset1_symbol"]),
+                    asset2=str(row["asset2_symbol"]),
+                    screener_type="cointegration",
+                    primary_metric_name="Cointegration Score",
+                    primary_metric_value=primary_value,
+                    secondary_metric_name=None,
+                    secondary_metric_value=None,
+                    is_cointegrated=bool(row["eg_is_cointegrated"]),
+                    last_updated=str(row["test_date"]),
+                )
+                try:
+                    setattr(item, "asset1_symbol", str(row["asset1_symbol"]))
+                    setattr(item, "asset2_symbol", str(row["asset2_symbol"]))
+                    setattr(item, "overall_score", primary_value)
+                    setattr(item, "cointegration_strength", strength)
+                    setattr(item, "trading_suitability", suitability)
+                    setattr(item, "risk_level", risk)
+                    setattr(item, "eg_pvalue", pvalue)
+                    setattr(item, "eg_is_cointegrated", bool(row["eg_is_cointegrated"]))
+                    setattr(item, "beta_coefficient", row["beta_coefficient"])
+                    setattr(item, "half_life_days", half_life)
+                    setattr(item, "sharpe_ratio", row["sharpe_ratio"])
+                    setattr(item, "test_date", str(row["test_date"]))
+                except Exception:
+                    pass
+                unified_pairs.append(item)
+
+            return UnifiedScreenerResponse(
+                pairs=unified_pairs,
+                total_pairs=len(unified_pairs),
+                screener_type="cointegration",
+                data_age_hours=0.0,
+                cache_status="sqlite",
+                granularity=granularity,
+                filters_applied={"min_score": min_score},
+            )
 
         response = supabase.client.rpc(
             "get_top_cointegrated_pairs",

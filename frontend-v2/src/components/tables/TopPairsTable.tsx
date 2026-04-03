@@ -125,7 +125,9 @@ export const TopPairsTable: React.FC<Props> = ({
     if (onPairSelect) {
       onPairSelect(asset1, asset2);
     } else {
-      navigate(`/pair-analysis?asset1=${asset1}&asset2=${asset2}&metric=correlation`);
+      navigate(
+        `/pair-analysis?asset1=${encodeURIComponent(asset1)}&asset2=${encodeURIComponent(asset2)}&metric=correlation`,
+      );
     }
   };
 

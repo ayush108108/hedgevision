@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  TrendingUp,
-  TrendingDown,
   Activity,
   CheckCircle2,
   AlertCircle,
@@ -10,6 +8,7 @@ import {
 } from "lucide-react";
 import { CointegrationTestResult } from "../../services/cointegrationApi";
 import { ErrorDisplay } from "../common/ErrorDisplay";
+import { getDisplayAssetName } from "../../utils/pairs";
 
 interface TopPairsGridProps {
   pairs: CointegrationTestResult[];
@@ -169,18 +168,20 @@ export function TopPairsGrid({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg font-bold text-white truncate">
-                      {pair.asset1_symbol}
+                      {getDisplayAssetName(pair.asset1_symbol) ?? pair.asset1_symbol}
                     </span>
                     <ArrowRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
                     <span className="text-lg font-bold text-white truncate">
-                      {pair.asset2_symbol}
+                      {getDisplayAssetName(pair.asset2_symbol) ?? pair.asset2_symbol}
                     </span>
                   </div>
                   <div
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium ${getStrengthBadge(pair.cointegration_strength)}`}
                   >
                     <span className="capitalize">
-                      {(pair.cointegration_strength || "unknown").replace("_", " ")}
+                      {pair.cointegration_strength
+                        ? pair.cointegration_strength.replace("_", " ")
+                        : "score pending"}
                     </span>
                   </div>
                 </div>
@@ -215,14 +216,18 @@ export function TopPairsGrid({
                 <div className="flex items-center gap-2">
                   {getSuitabilityIcon(pair.trading_suitability)}
                   <span className="text-xs text-gray-400 capitalize">
-                    {pair.trading_suitability}
+                    {pair.trading_suitability || "Awaiting full test"}
                   </span>
                 </div>
-                {pair.eg_is_cointegrated && (
-                  <div className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
-                    Cointegrated
-                  </div>
-                )}
+                <div
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    pair.eg_is_cointegrated
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-gray-500/20 text-gray-300"
+                  }`}
+                >
+                  {pair.eg_is_cointegrated ? "Cointegrated" : "Needs confirmation"}
+                </div>
               </div>
 
               {/* Hover Effect */}

@@ -37,7 +37,7 @@ export function DashboardHeader() {
         {/* Right side */}
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href="https://github.com/ayush-jadaun"
+            href="https://github.com/ayush108108/hedgevision"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all text-xs"
