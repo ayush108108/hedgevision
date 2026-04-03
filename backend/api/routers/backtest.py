@@ -3,16 +3,16 @@
 import logging
 from typing import Any, Dict, Optional
 
-from api.utils.auth_middleware import AuthUser, get_authenticated_user
 from api.utils.cache_adapter import get_cache_adapter
 from api.utils.config import config
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field, validator
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/backtest", tags=["backtest"], responses={404: {"description": "Not found"}}
+    prefix="/backtest",
+    tags=["backtest"], responses={404: {"description": "Not found"}}
 )
 
 cache = get_cache_adapter(default_ttl=config["REDIS_TTL"])
@@ -81,23 +81,13 @@ class OptimizationRequest(BaseModel):
 
 
 @router.post("/run")
-async def run_backtest(
-    request: BacktestRequest, current_user: AuthUser = Depends(get_authenticated_user)
-):
+async def run_backtest(request: BacktestRequest):
     """
     Run a synchronous backtest for a pair.
 
     This endpoint executes the backtest immediately and returns results.
     For long-running backtests, use the /async endpoint instead.
-
-    Requires authentication with 'run_basic_backtests' permission.
     """
-    # Check permission
-    if not current_user.has_permission("run_basic_backtests"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to run backtests",
-        )
     try:
         from datetime import datetime, timedelta
 
@@ -110,7 +100,7 @@ async def run_backtest(
 
         # Get pair analysis using analytics service
         analytics_service = AnalyticsService()
-        
+
         pair_report = await analytics_service.get_full_pair_report(
             asset1=request.symbol1,
             asset2=request.symbol2,
@@ -138,12 +128,12 @@ async def run_backtest(
                 status_code=400,
                 detail="No spread data available for backtesting",
             )
-        
+
         # Convert spread data to DataFrame
         spread_df = pd.DataFrame(spread_data)
         if "date" in spread_df.columns:
             spread_df["Date"] = pd.to_datetime(spread_df["date"])
-        
+
         spread_series: pd.Series = spread_df.set_index("Date")["spread"].dropna()
         zscore_series: pd.Series = spread_df.set_index("Date")["zscore"].dropna()
 
@@ -198,7 +188,6 @@ async def get_default_config():
     from api.services.backtest_engine import BacktestConfig
 
     default_config = BacktestConfig()
-
     return {
         "initial_capital": default_config.initial_capital,
         "position_size": default_config.position_size,
