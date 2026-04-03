@@ -113,7 +113,6 @@ coverage/
 htmlcov/
 __pycache__/
 *.sqlite3
-*.db
 *.db-journal
 *.pid
 *.seed
