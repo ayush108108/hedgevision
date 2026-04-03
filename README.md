@@ -386,7 +386,7 @@ Free to use, modify, and distribute. No warranties. Use at your own risk.
 
 - **Issues**: [github.com/ayush108108/hedgevision/issues](https://github.com/ayush108108/hedgevision/issues)
 - **Email**: [ayushverma108108@gmail.com](mailto:ayushverma108108@gmail.com)
-- **Twitter/X**: [@ayushv_dev](https://twitter.com/ayushv_dev)
+- **Twitter/X**: [@MrAyush108](https://twitter.com/MrAyush108)
 - **Website**: [ayushv.dev](https://ayushv.dev)
 
 ---
