@@ -77,24 +77,25 @@ def init_db() -> None:
     """)
 
     # --- Cointegration scores ---
+    # Schema must match what cointegration.py._store_test_result() and
+    # screener.py.get_cointegration_screener_pairs() expect.
     cur.execute("""
         CREATE TABLE IF NOT EXISTS cointegration_scores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             asset1_symbol TEXT NOT NULL,
             asset2_symbol TEXT NOT NULL,
-            test_date TEXT,
-            granularity TEXT DEFAULT 'daily',
-            lookback_days INTEGER DEFAULT 365,
-            cointegration_score REAL,
-            p_value REAL,
-            eg_test_stat REAL,
-            eg_critical_1pct REAL,
-            eg_critical_5pct REAL,
-            eg_critical_10pct REAL,
+            test_date TEXT NOT NULL,
+            granularity TEXT NOT NULL,
+            lookback_days INTEGER,
+            overall_score REAL,
+            eg_is_cointegrated INTEGER,
+            eg_pvalue REAL,
+            beta_coefficient REAL,
             half_life_days REAL,
             sharpe_ratio REAL,
             test_results TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(asset1_symbol, asset2_symbol, test_date, granularity)
         )
     """)
 
