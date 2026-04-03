@@ -30,12 +30,12 @@ export const features = {
   pairAnalysis: true,
   signals: true,
 
-  /** Optional pages — disabled by default for lean deployment */
+  /** Optional pages — backtest enabled by default; others off for lean deployment */
   portfolio: flag("VITE_FEATURE_PORTFOLIO"),
   news: flag("VITE_FEATURE_NEWS"),
   calculator: flag("VITE_FEATURE_CALCULATOR"),
   watchlist: flag("VITE_FEATURE_WATCHLIST"),
-  backtest: flag("VITE_FEATURE_BACKTEST"),
+  backtest: flag("VITE_FEATURE_BACKTEST", true),
   onboarding: flag("VITE_FEATURE_ONBOARDING"),
   auth: flag("VITE_FEATURE_AUTH"),
 } as const;

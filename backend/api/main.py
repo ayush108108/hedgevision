@@ -257,15 +257,20 @@ async def health_check():
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
     """Catch-all for React/Frontend routes (must be last)."""
-    # Skip docs or openapi
-    if full_path in ["docs", "redoc", "openapi.json"]:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    # Don't interfere with API, docs, or health routes - let routers handle them
+    # This only catches frontend SPA routes
+    if full_path.startswith("api/") or full_path in ["docs", "redoc", "openapi.json", "health"]:
+        # Don't catch - let it 404 naturally from routers
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Not Found")
     
+    # Serve frontend index.html for all other routes (SPA routing)
     index_file = os.path.join(frontend_path, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     
-    return JSONResponse(status_code=404, content={"detail": "Frontend not found"})
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="Frontend not found")
 
 
 @app.on_event("startup")
