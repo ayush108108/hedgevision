@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Zap, Send, MessageCircle, AlertCircle, Mail } from "lucide-react";
+import { Zap, Send, MessageCircle, Mail } from "lucide-react";
 import { getStructuredVerdict, type MarketIntelResponse } from "../services/marketIntel";
 import { useBYOKStore, type BYOKProvider } from "../state/byokStore";
 import { StructuredVerdictCard } from "../components/cards/StructuredVerdictCard";
+import { BacktestPage } from "./BacktestPage";
 
 export function TradingSignalsPage() {
   const { useLlm, provider, model, setUseLlm, setProvider, setModel } = useBYOKStore();
@@ -10,6 +11,7 @@ export function TradingSignalsPage() {
   const [verdictData, setVerdictData] = useState<MarketIntelResponse | null>(null);
   const [verdictError, setVerdictError] = useState<string | null>(null);
   const [verdictLoading, setVerdictLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"signals" | "backtest">("signals");
   const [chatMessages, setChatMessages] = useState<Array<{ id: string; text: string; sender: "user" | "bot"; timestamp: Date }>>([
     {
       id: "1",
@@ -117,236 +119,186 @@ export function TradingSignalsPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-[1920px] mx-auto px-6 py-6">
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 mb-6">
-          <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">Ticker</label>
-              <input
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                placeholder="BTC-USD"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">Provider</label>
-              <select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value as BYOKProvider)}
-                className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                title="BYOK Provider"
-              >
-                <option value="rules">Rules</option>
-                <option value="cpu">CPU Local</option>
-                <option value="openai">OpenAI</option>
-                <option value="anthropic">Anthropic</option>
-                <option value="ollama">Ollama</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">Model</label>
-              <input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white min-w-[180px]"
-              />
-            </div>
-            <label className="text-slate-300 text-sm inline-flex items-center gap-2 ml-2">
-              <input
-                type="checkbox"
-                checked={useLlm}
-                onChange={(e) => setUseLlm(e.target.checked)}
-              />
-              Use LLM
-            </label>
-            <button
-              onClick={handleLoadVerdict}
-              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
-            >
-              {verdictLoading ? "Loading..." : "Load Verdict"}
-            </button>
-          </div>
-
-          {verdictError && <p className="text-rose-300 text-sm mt-3">{verdictError}</p>}
-          {verdictData && (
-            <div className="mt-4">
-              <StructuredVerdictCard ticker={verdictData.ticker} verdict={verdictData.verdict} />
-            </div>
-          )}
+        {/* Tab navigation */}
+        <div className="max-w-[1920px] mx-auto px-6 flex gap-1 pb-0">
+          <button
+            onClick={() => setActiveTab("signals")}
+            className={`px-5 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === "signals"
+                ? "bg-slate-900 text-white border-t border-l border-r border-white/10"
+                : "text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            AI Verdict
+          </button>
+          <button
+            onClick={() => setActiveTab("backtest")}
+            className={`px-5 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === "backtest"
+                ? "bg-slate-900 text-white border-t border-l border-r border-white/10"
+                : "text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            Backtest Engine
+          </button>
         </div>
       </div>
 
-      <div className="max-w-[1920px] mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Coming Soon Section */}
-        <div className="lg:col-span-2">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 rounded-2xl p-8 h-full flex flex-col items-center justify-center">
-            <div className="text-center space-y-6">
-              {/* Coming Soon Badge */}
-              <div className="inline-block">
-                <span className="px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-300 text-sm font-semibold flex items-center gap-2">
-                  <AlertCircle size={16} />
-                  COMING SOON
-                </span>
-              </div>
-
-              {/* Main Message */}
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-white">
-                  AI-Powered Trading Signals
-                </h2>
-                <p className="text-gray-300 text-lg max-w-md mx-auto">
-                  We're building an intelligent trading signal analyzer powered by machine learning and real-time market data analysis.
-                </p>
-              </div>
-
-              {/* Features List */}
-              <div className="space-y-3 text-left inline-block">
-                <h3 className="text-white font-semibold mb-4">Coming Features:</h3>
-                <ul className="space-y-2 text-gray-300">
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Real-time signal generation from cointegrated pairs
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    ML-based entry and exit point predictions
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Risk management and position sizing recommendations
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Performance tracking and signal backtesting
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Alert notifications for new trading opportunities
-                  </li>
-                </ul>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full max-w-md mx-auto">
-                <p className="text-sm text-gray-400 mb-2">Development Progress</p>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 w-2/3 rounded-full" />
-                </div>
-                <p className="text-xs text-gray-400 mt-2">~67% Complete</p>
-              </div>
-
-              {/* CTA */}
-              <div className="space-y-3">
-                <p className="text-sm text-gray-400">
-                  📊 Ready to test your strategies?{" "}
-                  <a href="/backtest" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-                    Backtest Engine →
-                  </a>
-                </p>
-                <p className="text-sm text-gray-400">
-                  🔍 Or explore the{" "}
-                  <a href="/cointegration" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-                    Cointegration Screener
-                  </a>{" "}
-                  to find trading opportunities
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Interface */}
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 rounded-2xl overflow-hidden flex flex-col h-[600px]">
-          {/* Chat Header */}
-          <div className="border-b border-white/10 bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500">
-                <MessageCircle size={20} className="text-white" />
+      {/* Tab: AI Verdict */}
+      {activeTab === "signals" && (
+        <div className="max-w-[1920px] mx-auto px-6 py-6">
+          {/* Verdict controls */}
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 mb-6">
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Ticker</label>
+                <input
+                  value={ticker}
+                  onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                  placeholder="BTC-USD"
+                />
               </div>
               <div>
-                <h3 className="text-white font-semibold">Signal Assistant</h3>
-                <p className="text-xs text-gray-400">Under Development</p>
-              </div>
-            </div>
-            <span className="px-2 py-1 rounded-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-500/50 text-cyan-300 text-xs font-bold uppercase tracking-wider">
-              AI
-            </span>
-          </div>
-
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {chatMessages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-xs px-4 py-2 rounded-lg ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-none"
-                      : "bg-gray-700 text-gray-100 rounded-bl-none"
-                  }`}
+                <label className="text-xs text-slate-400 block mb-1">Provider</label>
+                <select
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value as BYOKProvider)}
+                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                  title="BYOK Provider"
                 >
-                  <p className="text-sm">{msg.text}</p>
-                  <p className={`text-xs mt-1 ${msg.sender === "user" ? "text-blue-100" : "text-gray-400"}`}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
+                  <option value="rules">Rules</option>
+                  <option value="cpu">CPU Local</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="ollama">Ollama</option>
+                </select>
               </div>
-            ))}
-          </div>
-
-          {/* Input Area */}
-          <div className="border-t border-white/10 p-4 bg-gray-900/50 space-y-2">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Ask about signals..."
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-              />
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Model</label>
+                <input
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white min-w-[180px]"
+                />
+              </div>
+              <label className="text-slate-300 text-sm inline-flex items-center gap-2 ml-2">
+                <input
+                  type="checkbox"
+                  checked={useLlm}
+                  onChange={(e) => setUseLlm(e.target.checked)}
+                />
+                Use LLM
+              </label>
               <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-                title="Send message"
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all duration-200 flex items-center gap-2"
+                onClick={handleLoadVerdict}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
               >
-                <Send size={16} />
+                {verdictLoading ? "Loading..." : "Load Verdict"}
               </button>
             </div>
-            <p className="text-xs text-gray-500 text-center">Coming soon - chat is in demo mode</p>
-          </div>
-        </div>
-      </div>
 
-      {/* CTA Section */}
-      <div className="max-w-[1920px] mx-auto px-6 py-6">
-        <div className="px-6 py-8 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-center">
-          <h3 className="text-2xl font-bold text-white mb-3">
-            Want Early Access to AI-Powered Features?
-          </h3>
-          <p className="text-gray-300 mb-6 max-w-xl mx-auto">
-            Join our waitlist to get notified when AI-powered trading signals and advanced analytics go live
-          </p>
-          <div className="flex justify-center gap-4 flex-wrap">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-4 py-3 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40">
-              <Mail className="h-4 w-4" />
-              Join Waitlist
-            </button>
+            {verdictError && <p className="text-rose-300 text-sm mt-3">{verdictError}</p>}
+            {verdictData && (
+              <div className="mt-4">
+                <StructuredVerdictCard ticker={verdictData.ticker} verdict={verdictData.verdict} />
+              </div>
+            )}
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            No spam. Unsubscribe anytime. We respect your privacy.
-          </p>
+
+          {/* Signal assistant chat + waitlist */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chat Interface */}
+            <div className="lg:col-span-1 bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 rounded-2xl overflow-hidden flex flex-col h-[500px]">
+              <div className="border-b border-white/10 bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500">
+                    <MessageCircle size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">Signal Assistant</h3>
+                    <p className="text-xs text-gray-400">Under Development</p>
+                  </div>
+                </div>
+                <span className="px-2 py-1 rounded-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-500/50 text-cyan-300 text-xs font-bold uppercase tracking-wider">
+                  AI
+                </span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {chatMessages.map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-xs px-4 py-2 rounded-lg ${
+                        msg.sender === "user"
+                          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-none"
+                          : "bg-gray-700 text-gray-100 rounded-bl-none"
+                      }`}
+                    >
+                      <p className="text-sm">{msg.text}</p>
+                      <p className={`text-xs mt-1 ${msg.sender === "user" ? "text-blue-100" : "text-gray-400"}`}>
+                        {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-white/10 p-4 bg-gray-900/50 space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    placeholder="Ask about signals..."
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim()}
+                    title="Send message"
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all duration-200 flex items-center gap-2"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 text-center">Demo mode — full AI chat coming soon</p>
+              </div>
+            </div>
+
+            {/* Waitlist CTA */}
+            <div className="lg:col-span-2 px-6 py-8 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 flex flex-col items-center justify-center text-center">
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Want Early Access to AI-Powered Features?
+              </h3>
+              <p className="text-gray-300 mb-6 max-w-xl">
+                Join our waitlist to get notified when AI-powered trading signals and advanced analytics go live.
+              </p>
+              <div className="flex justify-center gap-4 flex-wrap">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="px-4 py-3 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40">
+                  <Mail className="h-4 w-4" />
+                  Join Waitlist
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">
+                No spam. Unsubscribe anytime. We respect your privacy.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tab: Backtest Engine */}
+      {activeTab === "backtest" && (
+        <div className="max-w-[1920px] mx-auto px-6 py-6">
+          <BacktestPage />
+        </div>
+      )}
     </div>
   );
 }

@@ -226,12 +226,17 @@ Python tests enforce **90%+ coverage** on the `hedgevision/` package. CI will fa
 
 ### Optional Features (Env Flags)
 
+Backtest Engine is **enabled by default**. Other optional pages can be enabled via `frontend-v2/.env.local`:
+
 ```bash
 # Enable optional pages (frontend-v2/.env.local)
-VITE_FEATURE_BACKTEST=true
 VITE_FEATURE_PORTFOLIO=true
 VITE_FEATURE_NEWS=true
 VITE_FEATURE_CALCULATOR=true
+VITE_FEATURE_WATCHLIST=true
+
+# Disable backtest (enabled by default)
+VITE_FEATURE_BACKTEST=false
 ```
 
 ### Coming Soon
