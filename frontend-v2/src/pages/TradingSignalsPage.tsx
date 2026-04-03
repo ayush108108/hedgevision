@@ -240,13 +240,21 @@ export function TradingSignalsPage() {
               </div>
 
               {/* CTA */}
-              <p className="text-sm text-gray-400">
-                📩 In the meantime, try our{" "}
-                <a href="/cointegration" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-                  Cointegration Screener
-                </a>{" "}
-                to find trading opportunities
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-400">
+                  📊 Ready to test your strategies?{" "}
+                  <a href="/backtest" className="text-blue-400 hover:text-blue-300 font-semibold transition">
+                    Backtest Engine →
+                  </a>
+                </p>
+                <p className="text-sm text-gray-400">
+                  🔍 Or explore the{" "}
+                  <a href="/cointegration" className="text-blue-400 hover:text-blue-300 font-semibold transition">
+                    Cointegration Screener
+                  </a>{" "}
+                  to find trading opportunities
+                </p>
+              </div>
             </div>
           </div>
         </div>

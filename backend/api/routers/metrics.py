@@ -2,13 +2,16 @@
 Metrics Router - Rolling Financial Metrics API
 
 Exposes pre-computed rolling metrics from the rolling_metrics table.
+Supports both SQLite and Supabase backends.
 """
 
 import logging
+import sqlite3
 from typing import Any, Dict, List, Optional
 
 from api.utils.error_handlers import DatabaseError, ValidationError
 from api.utils.supabase_client import get_supabase_client
+from api.utils.config import config
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
@@ -54,6 +57,126 @@ class RollingMetricsResponse(BaseModel):
     count: int
 
 
+def _get_rolling_metrics_sqlite(
+    symbol: str,
+    window: Optional[int] = None,
+    benchmark: Optional[str] = None,
+) -> RollingMetricsResponse:
+    """Get rolling metrics from SQLite database."""
+    db_path = config.get("DB_PATH")
+    
+    try:
+        with sqlite3.connect(db_path, timeout=5.0) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # Get asset ID
+            cursor.execute("SELECT id FROM assets WHERE symbol = ?", (symbol,))
+            asset_row = cursor.fetchone()
+            if not asset_row:
+                raise HTTPException(status_code=404, detail=f"Asset {symbol} not found")
+            
+            asset_id = asset_row["id"]
+            
+            # Get benchmark ID if specified
+            benchmark_id = None
+            if benchmark:
+                cursor.execute("SELECT id FROM assets WHERE symbol = ?", (benchmark,))
+                bench_row = cursor.fetchone()
+                if bench_row:
+                    benchmark_id = bench_row["id"]
+            
+            # Build query
+            query = """
+                SELECT 
+                    rm.*,
+                    a.symbol as asset_symbol,
+                    b.symbol as benchmark_symbol
+                FROM rolling_metrics rm
+                JOIN assets a ON rm.asset_id = a.id
+                LEFT JOIN assets b ON rm.benchmark_id = b.id
+                WHERE rm.asset_id = ?
+            """
+            params: List[Any] = [asset_id]
+            
+            if benchmark_id is not None:
+                query += " AND rm.benchmark_id = ?"
+                params.append(benchmark_id)
+            
+            if window is not None:
+                # Validate window
+                valid_windows = [30, 60, 90, 180, 252]
+                if window not in valid_windows:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid window {window}. Must be one of: {valid_windows}"
+                    )
+                query += " AND rm.window_days = ?"
+                params.append(window)
+            
+            query += " ORDER BY rm.end_date DESC"
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            
+            if not rows:
+                return RollingMetricsResponse(
+                    status="success",
+                    asset_symbol=symbol,
+                    metrics=[],
+                    windows_available=[],
+                    count=0,
+                )
+            
+            # Convert rows to metrics
+            metrics = []
+            for row in rows:
+                metric = RollingMetric(
+                    id=row["id"],
+                    asset_id=row["asset_id"],
+                    asset_symbol=row["asset_symbol"],
+                    benchmark_id=row["benchmark_id"],
+                    benchmark_symbol=row["benchmark_symbol"],
+                    window_days=row["window_days"],
+                    start_date=row["start_date"],
+                    end_date=row["end_date"],
+                    rolling_beta=row["rolling_beta"],
+                    rolling_volatility=row["rolling_volatility"],
+                    rolling_sharpe=row["rolling_sharpe"],
+                    rolling_sortino=row["rolling_sortino"],
+                    max_drawdown=row["max_drawdown"],
+                    var_95=row["var_95"],
+                    cvar_95=row["cvar_95"],
+                    hurst_exponent=row["hurst_exponent"],
+                    alpha=row["alpha"],
+                    treynor=row["treynor"],
+                    information_ratio=row["information_ratio"],
+                    data_quality=row["data_quality"],
+                    created_at=row["created_at"],
+                    updated_at=row["updated_at"],
+                )
+                metrics.append(metric)
+            
+            # Get unique windows available
+            windows_available = sorted(list(set(m.window_days for m in metrics)))
+            
+            return RollingMetricsResponse(
+                status="success",
+                asset_symbol=symbol,
+                metrics=metrics,
+                windows_available=windows_available,
+                count=len(metrics),
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting rolling metrics from SQLite for {symbol}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve rolling metrics: {str(e)}"
+        )
+
+
 @router.get("/rolling/{symbol}", response_model=RollingMetricsResponse)
 async def get_rolling_metrics(
     symbol: str,
@@ -88,16 +211,20 @@ async def get_rolling_metrics(
     Example:
         GET /api/metrics/rolling/AAPL.US?window=252&benchmark=SPY.US
     """
+    # Check which backend to use
+    data_backend = config.get("DATA_BACKEND", "sqlite")
+    
+    # Use SQLite if configured or if Supabase is not available
+    if data_backend == "sqlite":
+        return _get_rolling_metrics_sqlite(symbol, window, benchmark)
+    
+    # Otherwise use Supabase
     try:
         supabase = get_supabase_client()
         if not supabase:
-            return RollingMetricsResponse(
-                status="unavailable",
-                asset_symbol=symbol,
-                metrics=[],
-                windows_available=[],
-                count=0,
-            )
+            # Fall back to SQLite if Supabase is not available
+            logger.warning("Supabase not available, falling back to SQLite")
+            return _get_rolling_metrics_sqlite(symbol, window, benchmark)
 
         # Get asset ID from symbol
         asset_response = (
