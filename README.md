@@ -53,7 +53,7 @@ Here’s a quick look at the working software — from screening statistically i
 
 ---
 
-## 🚀 Quick Start (3 Commands)
+## 🚀 Quick Start (2 Commands)
 
 ### Prerequisites
 
@@ -61,25 +61,28 @@ Here’s a quick look at the working software — from screening statistically i
 # Verify you have:
 python --version  # 3.10+
 node --version    # 16+
+git lfs install   # Git LFS (for pre-loaded market data)
 ```
 
-### Installation & Setup
+### Clone & Run
 
 ```bash
-# 1. Clone and install dependencies
+# 1. Clone (includes 2 years of pre-loaded market data via Git LFS)
 git clone https://github.com/ayush108108/hedgevision.git
 cd hedgevision
-make install
 
-# 2. Start backend + frontend
-make dev
+# 2. Install + start
+make install && make dev
 
 # 3. Open dashboard
 # → http://localhost:3000 (Frontend)
 # → http://localhost:8000/docs (API Docs)
 ```
 
-**That's it.** You now have a fully functional local setup with SQLite and paper trading.
+**That's it.** The repo ships with a pre-seeded SQLite database (`backend/prices.db`) containing 2 years of daily price data for 75 assets (crypto + equities). No API keys, no data fetching, no waiting.
+
+> **Want fresh data?** Run `make db-bootstrap` to re-fetch from yfinance.  
+> **Full from-scratch setup?** Run `make quickstart` (installs deps + rebuilds DB + starts dev).
 
 ---
 

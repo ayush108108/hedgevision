@@ -98,6 +98,21 @@ def init_db() -> None:
         )
     """)
 
+    # --- Correlation screener ---
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS correlation_screener (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            asset1_id INTEGER NOT NULL,
+            asset2_id INTEGER NOT NULL,
+            correlation REAL NOT NULL,
+            p_value REAL,
+            method TEXT NOT NULL DEFAULT 'spearman',
+            granularity TEXT NOT NULL DEFAULT 'daily',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(asset1_id, asset2_id, method, granularity)
+        )
+    """)
+
     # --- Waitlist signups ---
     cur.execute("""
         CREATE TABLE IF NOT EXISTS waitlist_signups (

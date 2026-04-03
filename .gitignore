@@ -51,11 +51,11 @@ htmlcov/
 *.cover
 .hypothesis/
 
-# Database
+# Database (except backend/prices.db — shipped via Git LFS for zero-setup)
 *.db
+!backend/prices.db
 *.sqlite
 *.sqlite3
-prices.db
 
 # Logs
 *.log
@@ -286,8 +286,6 @@ skills-lock.json
 *.db-shm
 *.db-wal
 
-# Screenshots / previews
-readme_previews/
 
 # Holiday data (non-functional stubs)
 holiday_data/
