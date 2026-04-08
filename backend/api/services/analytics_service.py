@@ -26,6 +26,7 @@ Each function is a clean, high-level interface that routers can call.
 """
 
 import logging
+import sqlite3
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
@@ -47,6 +48,16 @@ from .cointegration_service import CointegrationService
 from .data_standardization_service import DataStandardizationService
 
 logger = logging.getLogger(__name__)
+
+
+def _candidate_symbols(symbol: str) -> list[str]:
+    """Return likely symbol variants for local SQLite lookups."""
+    candidates = [symbol]
+    if symbol.endswith(".CC"):
+        candidates.append(symbol[:-3])
+    if symbol.endswith(".US"):
+        candidates.append(symbol[:-3])
+    return list(dict.fromkeys(candidates))
 
 
 class AnalyticsService:
@@ -442,6 +453,17 @@ class AnalyticsService:
 
         Uses datetime normalization for consistent UTC ISO boundaries.
         """
+        data_backend = str(config.get("DATA_BACKEND", "sqlite")).lower()
+
+        if data_backend == "sqlite":
+            return await self._fetch_pair_data_sqlite(
+                asset1=asset1,
+                asset2=asset2,
+                start_date=start_date,
+                end_date=end_date,
+                granularity=granularity,
+            )
+
         if not self.supabase_client:
             raise HTTPException(
                 status_code=503,
@@ -515,10 +537,92 @@ class AnalyticsService:
             "open_asset2", "high_asset2", "low_asset2", "volume_asset2"
         ]]
 
+    async def _fetch_pair_data_sqlite(
+        self,
+        asset1: str,
+        asset2: str,
+        start_date: str,
+        end_date: str,
+        granularity: str,
+    ) -> pd.DataFrame:
+        """Fetch and merge pair price data from local SQLite."""
+        table = "price_history" if granularity == "daily" else "prices_hourly"
+        db_path = str(config.get("DB_PATH", "backend/prices.db"))
+        start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
+        end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
+
+        def fetch_asset(symbol: str) -> pd.DataFrame:
+            with sqlite3.connect(db_path, timeout=5.0) as conn:
+                conn.row_factory = sqlite3.Row
+                asset_row = None
+                for candidate in _candidate_symbols(symbol):
+                    asset_row = conn.execute(
+                        "SELECT id FROM assets WHERE symbol = ? LIMIT 1",
+                        (candidate,),
+                    ).fetchone()
+                    if asset_row:
+                        break
+                if not asset_row:
+                    raise HTTPException(status_code=404, detail=f"Asset not found: {symbol}")
+
+                rows = conn.execute(
+                    f"""
+                    SELECT timestamp, open, high, low, close, volume
+                    FROM {table}
+                    WHERE asset_id = ?
+                      AND timestamp >= ?
+                      AND timestamp <= ?
+                    ORDER BY timestamp
+                    """,
+                    (int(asset_row[0]), start_iso, end_iso),
+                ).fetchall()
+
+            if not rows:
+                raise HTTPException(status_code=404, detail=f"No price data for {symbol}")
+
+            df = pd.DataFrame([dict(row) for row in rows])
+            df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+            return df
+
+        asset1_data = fetch_asset(asset1)
+        asset2_data = fetch_asset(asset2)
+
+        merged = pd.merge(
+            asset1_data,
+            asset2_data,
+            on="timestamp",
+            suffixes=("_asset1", "_asset2"),
+        )
+
+        if len(merged) < 30:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient data: {len(merged)} points (need at least 30)",
+            )
+
+        merged = merged.rename(
+            columns={
+                "timestamp": "date",
+                "close_asset1": "asset1_price",
+                "close_asset2": "asset2_price",
+            }
+        )
+
+        return merged[[
+            "date",
+            "asset1_price", "asset2_price",
+            "open_asset1", "high_asset1", "low_asset1", "volume_asset1",
+            "open_asset2", "high_asset2", "low_asset2", "volume_asset2",
+        ]]
+
     async def _fetch_single_asset_data(
         self, symbol: str, start_date: Optional[str], end_date: Optional[str], granularity: str
     ) -> pd.DataFrame:
         """Fetch price data for a single asset from database."""
+        data_backend = str(config.get("DATA_BACKEND", "sqlite")).lower()
+        if data_backend == "sqlite":
+            return await self._fetch_single_asset_data_sqlite(symbol, start_date, end_date, granularity)
+
         if not self.supabase_client:
             raise HTTPException(
                 status_code=503,
@@ -576,6 +680,57 @@ class AnalyticsService:
         df = df[["Date", "Close"]].copy()
         
         return df
+
+    async def _fetch_single_asset_data_sqlite(
+        self,
+        symbol: str,
+        start_date: Optional[str],
+        end_date: Optional[str],
+        granularity: str,
+    ) -> pd.DataFrame:
+        """Fetch price data for a single asset from SQLite."""
+        if not start_date:
+            start_date = "2020-01-01"
+        if not end_date:
+            end_date = "2026-12-31"
+
+        table = "price_history" if granularity == "daily" else "prices_hourly"
+        db_path = str(config.get("DB_PATH", "backend/prices.db"))
+        start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
+        end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
+
+        with sqlite3.connect(db_path, timeout=5.0) as conn:
+            conn.row_factory = sqlite3.Row
+            asset_row = None
+            for candidate in _candidate_symbols(symbol):
+                asset_row = conn.execute(
+                    "SELECT id FROM assets WHERE symbol = ? LIMIT 1",
+                    (candidate,),
+                ).fetchone()
+                if asset_row:
+                    break
+            if not asset_row:
+                raise HTTPException(404, f"Asset not found: {symbol}")
+
+            rows = conn.execute(
+                f"""
+                SELECT timestamp, close
+                FROM {table}
+                WHERE asset_id = ?
+                  AND timestamp >= ?
+                  AND timestamp <= ?
+                ORDER BY timestamp
+                """,
+                (int(asset_row[0]), start_iso, end_iso),
+            ).fetchall()
+
+        if not rows:
+            raise HTTPException(404, f"No price data for {symbol}")
+
+        df = pd.DataFrame([dict(row) for row in rows])
+        df["Date"] = pd.to_datetime(df["timestamp"], utc=True)
+        df = df.rename(columns={"close": "Close"})
+        return df[["Date", "Close"]].copy()
 
     def _format_precomputed_report(
         self,

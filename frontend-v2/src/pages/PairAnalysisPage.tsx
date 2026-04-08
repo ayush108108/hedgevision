@@ -1,42 +1,38 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPairAnalysis } from "../services/pair";
 import { getRollingMetrics, type MetricType } from "../services/rollingMetrics";
 import { SyncedCharts } from "../components/charts/SyncedCharts";
-import { RegressionChart } from "../components/charts/RegressionChart";
 import { RollingMetricsChart } from "../components/charts/RollingMetricsChart";
-import { PairMetricsCard } from "../components/cards/PairMetricsCard";
-import { CointegrationCard } from "../components/cards/CointegrationCard";
 import {
-  POPULAR_ASSETS,
   ALL_ASSET_NAMES,
-  ALL_ASSET_SYMBOLS,
   getSymbolFromName,
 } from "../constants/assets";
 import { BenchmarkSelector, getBenchmarkSymbol, getBenchmarkById } from "../components/controls/BenchmarkSelector";
 import { MetricSelector } from "../components/controls/MetricSelector";
 import { WindowSelector } from "../components/controls/WindowSelector";
-import { RefreshCw, Mail, Maximize2, Minimize2, X } from "lucide-react";
+import { RefreshCw, Mail, Maximize2, X } from "lucide-react";
 import { Select } from "../components/common/Select";
 import { DatePicker } from "../components/common/DatePicker";
 import { LoadingChart } from "../components/common/LoadingChart";
 import { HedgeRatioCalculator } from "../components/HedgeRatioCalculator";
 import { InfoTooltip } from "../components/common/Tooltip";
+import {
+  getApiAssetSymbol,
+  getDisplayAssetName,
+  getPairSignalSummary,
+} from "../utils/pairs";
 
-// Resolve a URL param that may be a display name ('Apple') OR a raw symbol ('AAPL.US')
-function resolveAssetSymbol(nameOrSymbol: string): string | undefined {
-  // If it's already a known symbol (passed from heatmap/table navigation), use it directly
-  if (ALL_ASSET_SYMBOLS.includes(nameOrSymbol as any)) return nameOrSymbol;
-  // Otherwise treat it as a display name and look up the symbol
-  return getSymbolFromName(nameOrSymbol);
+function getInitialAssetValue(paramValue: string | null, fallback: string): string {
+  return getDisplayAssetName(paramValue) || fallback;
 }
 
 export function PairAnalysisPage() {
   const [searchParams] = useSearchParams();
-  const [asset1, setAsset1] = useState(searchParams.get("asset1") || "Apple");
+  const [asset1, setAsset1] = useState(getInitialAssetValue(searchParams.get("asset1"), "Apple"));
   const [asset2, setAsset2] = useState(
-    searchParams.get("asset2") || "Microsoft",
+    getInitialAssetValue(searchParams.get("asset2"), "Microsoft"),
   );
   // Dynamic dates: last 12 months from today (data only goes back to ~2024-03-21)
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -46,14 +42,12 @@ export function PairAnalysisPage() {
   const [granularity, setGranularity] = useState<string>("daily");
   const [selectedBenchmark, setSelectedBenchmark] = useState<string>("spy");
   
-  // Pre-select rolling correlation if coming from heatmap/table
-  const metricParam = searchParams.get("metric");
   const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>(
     ["beta", "volatility"]
   );
   const [selectedWindow, setSelectedWindow] = useState<number>(60);
   // Separate asset selector for rolling metrics - use asset1 by default
-  const [metricsAsset, setMetricsAsset] = useState<string>(asset1);
+  const [metricsAsset, setMetricsAsset] = useState<string>(getInitialAssetValue(searchParams.get("asset1"), "Apple"));
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -69,6 +63,15 @@ export function PairAnalysisPage() {
     return () => window.removeEventListener("keydown", handler);
   }, [isChartFullscreen]);
 
+  useEffect(() => {
+    const nextAsset1 = getInitialAssetValue(searchParams.get("asset1"), "Apple");
+    const nextAsset2 = getInitialAssetValue(searchParams.get("asset2"), "Microsoft");
+
+    setAsset1(nextAsset1);
+    setAsset2(nextAsset2);
+    setMetricsAsset(nextAsset1);
+  }, [searchParams]);
+
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "pair-analysis",
@@ -80,8 +83,8 @@ export function PairAnalysisPage() {
     ],
     queryFn: () => {
       // Resolve either display name or raw symbol from URL/state
-      const symbol1 = resolveAssetSymbol(asset1);
-      const symbol2 = resolveAssetSymbol(asset2);
+      const symbol1 = getApiAssetSymbol(asset1);
+      const symbol2 = getApiAssetSymbol(asset2);
 
       if (!symbol1 || !symbol2) {
         throw new Error(`Invalid asset selection: '${asset1}' or '${asset2}' not recognized`);
@@ -101,9 +104,7 @@ export function PairAnalysisPage() {
   // Get benchmark data - memoized for performance
   const benchmarkSymbol = useMemo(() => getBenchmarkSymbol(selectedBenchmark), [selectedBenchmark]);
   const benchmarkInfo = useMemo(() => getBenchmarkById(selectedBenchmark), [selectedBenchmark]);
-  const symbol1 = useMemo(() => resolveAssetSymbol(asset1), [asset1]);
-  const symbol2 = useMemo(() => resolveAssetSymbol(asset2), [asset2]);
-  const metricsAssetSymbol = useMemo(() => getSymbolFromName(metricsAsset) || metricsAsset, [metricsAsset]);
+  const metricsAssetSymbol = useMemo(() => getApiAssetSymbol(metricsAsset) || metricsAsset, [metricsAsset]);
 
   // Query rolling metrics (unified)
   const { data: metricsData, isLoading: metricsLoading } = useQuery({
@@ -205,6 +206,17 @@ export function PairAnalysisPage() {
     const last = sd[sd.length - 1];
     return typeof last?.zscore === "number" ? last.zscore : undefined;
   }, [data?.spread_data]);
+
+  const pairSignal = useMemo(
+    () =>
+      getPairSignalSummary({
+        currentZScore,
+        isCointegrated: data?.cointegration_results?.eg_is_cointegrated,
+        asset1Name: asset1,
+        asset2Name: asset2,
+      }),
+    [asset1, asset2, currentZScore, data?.cointegration_results?.eg_is_cointegrated],
+  );
 
   // Compute combined chart height to fit in one screen without scrolling
   const [combinedHeight, setCombinedHeight] = useState<number>(680);
@@ -542,16 +554,18 @@ export function PairAnalysisPage() {
                 <div className="bg-white/5 rounded-xl p-3 text-center">
                   <div className="text-xs text-gray-500 mb-1">Current Z-Score</div>
                   <div className={`text-lg font-bold ${
-                    Math.abs(currentZScore ?? 0) > 2
+                    pairSignal.tone === 'red'
                       ? 'text-red-400'
-                      : Math.abs(currentZScore ?? 0) > 1.5
+                      : pairSignal.tone === 'yellow'
                         ? 'text-yellow-400'
-                        : 'text-green-400'
+                        : pairSignal.tone === 'blue'
+                          ? 'text-blue-400'
+                          : 'text-green-400'
                   }`}>
                     {currentZScore != null ? currentZScore.toFixed(2) : 'N/A'}
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
-                    {Math.abs(currentZScore ?? 0) > 2 ? 'Entry Signal' : 'No Signal'}
+                    {pairSignal.label}
                   </div>
                 </div>
                 <div className="bg-white/5 rounded-xl p-3 text-center">
@@ -574,6 +588,7 @@ export function PairAnalysisPage() {
               asset1Name={asset1}
               asset2Name={asset2}
               currentZScore={currentZScore}
+              isCointegrated={data.cointegration_results?.eg_is_cointegrated}
             />
           )}
 

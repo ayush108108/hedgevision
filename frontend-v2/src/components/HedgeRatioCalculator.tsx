@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Calculator, TrendingUp, TrendingDown, Info, AlertTriangle, CheckCircle } from "lucide-react";
 import { InfoTooltip } from "./common/Tooltip";
+import { getPairSignalSummary } from "../utils/pairs";
 
 interface HedgeRatioCalculatorProps {
   /** β from the OLS regression — the dollar hedge ratio */
@@ -9,6 +10,7 @@ interface HedgeRatioCalculatorProps {
   asset2Name: string;
   /** Latest z-score of the spread (used to show current position context) */
   currentZScore?: number;
+  isCointegrated?: boolean;
 }
 
 function ZScoreBadge({ z }: { z: number }) {
@@ -50,6 +52,7 @@ export function HedgeRatioCalculator({
   asset1Name,
   asset2Name,
   currentZScore,
+  isCointegrated,
 }: HedgeRatioCalculatorProps) {
   const [capital, setCapital] = useState<string>("10000");
 
@@ -63,21 +66,15 @@ export function HedgeRatioCalculator({
   //   Short Asset1 (overvalued relative to Asset2), Long Asset2
   // If negative: Long Asset1, Short Asset2
   const z = currentZScore;
-  const isPositiveSpread = z !== undefined && z > 0;
+  const signal = getPairSignalSummary({
+    currentZScore: z,
+    isCointegrated,
+    asset1Name,
+    asset2Name,
+  });
 
-  const longAsset = isPositiveSpread ? asset2Name : asset1Name;
-  const shortAsset = isPositiveSpread ? asset1Name : asset2Name;
-
-  const signalLabel =
-    z === undefined
-      ? "Load pair data to see a trade signal"
-      : Math.abs(z) >= 2
-      ? "Strong signal — spread is very stretched"
-      : Math.abs(z) >= 1.5
-      ? "Signal — spread is at an actionable level"
-      : Math.abs(z) >= 1
-      ? "Spread is widening — monitor for an entry"
-      : "No active signal — wait for spread to widen";
+  const longAsset = signal.longAsset ?? asset1Name;
+  const shortAsset = signal.shortAsset ?? asset2Name;
 
   const formatUSD = (n: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -194,7 +191,7 @@ export function HedgeRatioCalculator({
                   Sell Short
                   <InfoTooltip
                     title="Short position"
-                    text={`You profit when ${shortAsset} falls relative to ${longAsset}. You borrow and sell shares you don't own, hoping to buy them back cheaper later.`}
+                    text={`You profit when ${shortAsset} falls relative to ${longAsset}. You borrow and sell shares you don’t own, hoping to buy them back cheaper later.`}
                   />
                 </div>
                 <div className="text-sm font-semibold text-white">{shortAsset}</div>
@@ -232,14 +229,16 @@ export function HedgeRatioCalculator({
           </div>
           <div
             className={`text-xs rounded-lg px-3 py-2 border ${
-              Math.abs(z) >= 1.5
+              signal.tone === "red"
+                ? "bg-red-900/20 border-red-700/30 text-red-300"
+                : signal.tone === "yellow"
                 ? "bg-amber-900/20 border-amber-700/30 text-amber-300"
-                : Math.abs(z) >= 1
+                : signal.tone === "blue"
                 ? "bg-blue-900/20 border-blue-700/30 text-blue-300"
                 : "bg-white/3 border-white/8 text-gray-400"
             }`}
           >
-            {signalLabel}
+            <span className="font-medium">{signal.label}:</span> {signal.detail}
           </div>
         </div>
       )}

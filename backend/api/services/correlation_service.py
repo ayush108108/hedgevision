@@ -6,6 +6,7 @@ Contains functions for correlation calculations, rolling correlations, and relat
 
 import logging
 import os
+import sqlite3
 import sys
 
 import numpy as np
@@ -23,6 +24,20 @@ DEFAULT_START_DATE_STR = "2020-01-01"
 DEFAULT_END_DATE_STR = "2026-12-31"
 
 
+def _candidate_symbols(symbol: str) -> list[str]:
+    """Return likely local symbol variants for SQLite-backed lookups."""
+    candidates = [symbol]
+    if symbol.endswith(".CC"):
+        candidates.append(symbol[:-3])
+    if symbol.endswith(".US"):
+        candidates.append(symbol[:-3])
+    if symbol.endswith(".NSE"):
+        candidates.append(symbol.replace(".NSE", ".NS"))
+    if symbol.endswith(".BSE"):
+        candidates.append(symbol.replace(".BSE", ".BO"))
+    return list(dict.fromkeys(candidates))
+
+
 def _fetch_price_data(symbol: str, start_date: str, end_date: str, granularity: str) -> pd.DataFrame:
     """
     Fetch price data directly from Supabase.
@@ -30,7 +45,54 @@ def _fetch_price_data(symbol: str, start_date: str, end_date: str, granularity: 
     Replaces deprecated query_service.get_cached_data().
     Uses direct Supabase queries for cleaner architecture.
     """
+    from api.utils.config import config
+    from api.utils.datetime_normalization import normalize_datetime_iso
     from api.utils.supabase_client import get_supabase_client
+
+    data_backend = str(config.get("DATA_BACKEND", "sqlite")).lower()
+    start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
+    end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
+
+    if data_backend == "sqlite":
+        db_path = str(config.get("DB_PATH", "backend/prices.db"))
+        table = "price_history" if granularity == "daily" else "prices_hourly"
+        try:
+            with sqlite3.connect(db_path, timeout=5.0) as conn:
+                conn.row_factory = sqlite3.Row
+                asset_row = None
+                for candidate in _candidate_symbols(symbol):
+                    asset_row = conn.execute(
+                        "SELECT id FROM assets WHERE symbol = ? LIMIT 1",
+                        (candidate,),
+                    ).fetchone()
+                    if asset_row:
+                        break
+                if not asset_row:
+                    logger.warning("Asset not found in SQLite: %s", symbol)
+                    return pd.DataFrame()
+
+                price_rows = conn.execute(
+                    f"""
+                    SELECT timestamp, close
+                    FROM {table}
+                    WHERE asset_id = ?
+                      AND timestamp >= ?
+                      AND timestamp <= ?
+                    ORDER BY timestamp
+                    """,
+                    (int(asset_row[0]), start_iso, end_iso),
+                ).fetchall()
+
+            if not price_rows:
+                return pd.DataFrame()
+
+            df = pd.DataFrame([dict(row) for row in price_rows])
+            df["Date"] = pd.to_datetime(df["timestamp"], utc=True)
+            df = df.rename(columns={"close": "Close"})
+            return df[["Date", "Close"]].copy()
+        except Exception as e:
+            logger.error("Error fetching SQLite data for %s: %s", symbol, e)
+            return pd.DataFrame()
     
     supabase = get_supabase_client()
     if not supabase:
@@ -61,11 +123,6 @@ def _fetch_price_data(symbol: str, start_date: str, end_date: str, granularity: 
         else:
             table = "prices_hourly"
         
-        # Normalize temporal bounds (accept date/datetime strings)
-        from api.utils.datetime_normalization import normalize_datetime_iso
-        start_iso = normalize_datetime_iso(start_date, assume="start") or str(start_date)
-        end_iso = normalize_datetime_iso(end_date, assume="end") or str(end_date)
-
         # Fetch prices with normalized ISO8601 bounds
         price_response = (
             supabase.client.table(table)

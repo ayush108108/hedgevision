@@ -1,0 +1,2 @@
+backend/prices.db filter=lfs diff=lfs merge=lfs -text
+readme_previews/*.mp4 filter=lfs diff=lfs merge=lfs -text

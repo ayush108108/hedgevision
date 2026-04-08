@@ -8,14 +8,36 @@ HedgeVision (stat-arb-v2) is a quantitative trading platform for statistical arb
 
 ## Common Commands
 
+> **The `Makefile` is the Single Source of Truth for running HedgeVision.**  
+> All commands below are wrapped by `make` targets — use `make help` to list them.
+
+### Quick Start (from repo root)
+
+```bash
+make quickstart   # install deps + init DB + seed data + start dev servers
+# — or step by step —
+make install      # Python + Node deps
+make db-init      # create SQLite schema
+make db-bootstrap # seed 2 years of market data
+make dev          # start backend + frontend
+```
+
+### Docker
+
+```bash
+make up           # build & start all containers (detached)
+make down         # stop containers
+make logs         # tail logs
+```
+
 ### Backend (from repo root)
 
 ```bash
 # Install Python deps
-pip install -e ".[all]"  # installs hedgevision + all optional deps in editable mode
+pip install -e ".[all]"          # or: make install-python
 
 # Run backend API server
-uvicorn backend.api.main:app --reload
+uvicorn backend.api.main:app --reload   # or: make backend-dev
 
 # Run daily data pipeline
 python scripts/pipelines/daily_eod_pipeline.py

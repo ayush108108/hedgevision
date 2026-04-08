@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { PairAnalysisPage } from "./PairAnalysisPage";
 import * as pairService from "../services/pair";
 
@@ -24,11 +24,18 @@ const createTestQueryClient = () =>
     },
   });
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (
+  ui: React.ReactElement,
+  route?: string,
+) => {
   const queryClient = createTestQueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{ui}</BrowserRouter>
+      {route ? (
+        <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
+      ) : (
+        <BrowserRouter>{ui}</BrowserRouter>
+      )}
     </QueryClientProvider>,
   );
 };
@@ -90,7 +97,7 @@ describe("PairAnalysisPage", () => {
         new Error("Network error"),
       );
 
-      const { container } = renderWithProviders(<PairAnalysisPage />);
+      renderWithProviders(<PairAnalysisPage />);
 
       await waitFor(() => {
         const errorDiv = screen.getByText(/Error:/i).closest(".premium-card");
@@ -133,7 +140,7 @@ describe("PairAnalysisPage", () => {
 
       expect(screen.getByText("Pair Analysis")).toBeInTheDocument();
       expect(
-        screen.getByText(/Comprehensive statistical analysis of asset pairs/i),
+        screen.getByText(/Deep statistical analysis of two assets/i),
       ).toBeInTheDocument();
     });
 
@@ -212,6 +219,29 @@ describe("PairAnalysisPage", () => {
       await waitFor(() => {
         expect(screen.queryByText(/Error:/i)).not.toBeInTheDocument();
       });
+    });
+
+    it("should resolve screener raw symbols from the URL into the API request", async () => {
+      vi.mocked(pairService.getPairAnalysis).mockResolvedValue(
+        mockPairAnalysisData,
+      );
+
+      renderWithProviders(
+        <PairAnalysisPage />,
+        "/pair-analysis?asset1=BTC-USD&asset2=ETH-USD",
+      );
+
+      await waitFor(() => {
+        expect(pairService.getPairAnalysis).toHaveBeenCalledWith(
+          expect.objectContaining({
+            asset1: "BTC-USD.CC",
+            asset2: "ETH-USD.CC",
+          }),
+        );
+      });
+
+      expect(screen.getByText("Bitcoin")).toBeInTheDocument();
+      expect(screen.getByText("Ethereum")).toBeInTheDocument();
     });
   });
 

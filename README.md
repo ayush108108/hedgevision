@@ -1,309 +1,418 @@
 # HedgeVision
 
-> An open-source statistical arbitrage platform for quantitative trading research and development.
+> **Open-source statistical arbitrage platform.** Local-first with optional Supabase scaling.
 
-**HedgeVision** is a full-stack quantitative trading platform designed around statistical arbitrage strategies. It combines a powerful Python backend (FastAPI) with a modern React frontend to provide researchers, traders, and developers with tools to discover, backtest, and simulate trading pairs strategies locally or in the cloud.
+**HedgeVision** is a production-ready quantitative trading platform for stat-arb strategies. Python backend (FastAPI) + React frontend (Vite/TypeScript). Discover cointegrated pairs, backtest strategies, and run paper trading simulations — **zero external dependencies required**.
 
-## 🎯 Key Features
+Built for **local development by default**. SQLite, paper broker, and rule-based intel run out of the box. Supabase (Postgres), external LLMs (OpenAI/Anthropic/Ollama), and live exchange brokers (CCXT) are **explicit opt-ins**.
 
-- **Local-First Architecture**: Run everything locally with SQLite — no external services required
-- **Statistical Arbitrage Focus**: Built-in cointegration analysis, correlation tracking, and pairs discovery
-- **Dual-Backend Support**: SQLite for local development, Supabase/PostgreSQL for production scaling
-- **Paper Trading**: Simulate trading strategies with realistic order execution before going live
-- **Real-Time Dashboard**: React + Vite frontend with live analytics and market intelligence
-- **Flexible LLM Integration**: Support for multiple LLM providers (rules, Ollama, OpenAI, Anthropic)
-- **Broker Abstraction**: Paper broker by default, CCXT for live exchange connectivity (when enabled)
-- **CLI & MCP Tools**: Command-line interface and Model Context Protocol server for automation
+This is part of **SuperIntel** — a fully autonomous trading ecosystem. HedgeVision is the first public component. More OSS modules dropping soon.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Node 16+](https://img.shields.io/badge/node-16+-green.svg)](https://nodejs.org/)
 
-## 📂 Project Structure
+---
 
-```bash
-.
-├── CONTRIBUTING.md
-├── README.md
-├── assets_mapping_yfi
-├── backend
-│   ├── Dockerfile
-│   ├── Dockerfile.audit-test
-│   ├── Supabase_schema
-│   ├── __init__.py
-│   ├── agents
-│   │   └── market_intel.py
-│   ├── api
-│   │   ├── __init__.py
-│   │   ├── audit
-│   │   ├── cli
-│   │   ├── main.py
-│   │   ├── repositories
-│   │   ├── routers
-│   │   ├── run.py
-│   │   ├── services
-│   │   └── utils
-│   ├── check_db_status.py
-│   ├── clients
-│   │   ├── base_client.py
-│   │   ├── ccxt_client.py
-│   │   └── yfinance_client.py
-│   ├── docker-compose.audit-test.yml
-│   ├── requirements.txt
-│   ├── run.py
-│   ├── run_market_intel_demo.py
-│   └── scripts
-├── config
-│   └── asset_universe_master.yaml
-├── docs
-│   ├── ARCHITECTURE.md
-│   ├── DEPLOYMENT.md
-│   ├── SCRIPTS.md
-│   └── SETUP.md
-├── frontend-v2
-│   ├── Dockerfile
-│   ├── README.md
-│   ├── TESTING.md
-│   ├── index.html
-│   ├── nginx.conf
-│   ├── package.json
-│   ├── postcss.config.cjs
-│   ├── public
-│   ├── src
-│   │   ├── App.tsx
-│   │   ├── assets
-│   │   ├── auth
-│   │   ├── components
-│   │   ├── config
-│   │   ├── constants
-│   │   ├── hooks
-│   │   ├── main.tsx
-│   │   ├── pages
-│   │   ├── services
-│   │   ├── state
-│   │   ├── test
-│   │   ├── themes
-│   │   ├── types
-│   │   ├── utils
-│   │   └── vite-env.d.ts
-│   ├── tailwind.config.cjs
-│   ├── tailwind.config.js
-│   ├── tsconfig.json
-│   ├── vite.config.ts
-│   └── vitest.config.ts
-├── holiday_data
-├── pyproject.toml
-├── pytest.ini
-├── requirements.txt
-├── scripts
-│   ├── README.md
-│   ├── apply_schema.py
-│   ├── bootstrap_assets_timescale.py
-│   ├── cleanup_disabled_assets.py
-│   ├── comprehensive_multi_tier_eda.py
-│   ├── compute_rolling_metrics_standalone.py
-│   ├── data_validation_checks.sql
-│   ├── db
-│   ├── debug
-│   ├── etl
-│   ├── extract_assets_list.py
-│   ├── master_all_time_workflow.py
-│   ├── pipelines
-│   ├── populate_cointegration.py
-│   ├── precompute_correlations.py
-│   ├── preflight_check.py
-│   ├── quick_cleanup_db.py
-│   ├── run_population_workflow.py
-│   ├── setup
-│   ├── simple_validation.py
-│   ├── smoke_import.py
-│   ├── test_ci_workflows.py
-│   ├── truncate_db.py
-│   ├── validate_docs_layout.py
-│   └── validate_yfinance_tickers.py
-├── tests
-│   ├── README.md
-│   ├── UNIT_TEST_COMPLETION_SUMMARY.md
-│   ├── conftest.py
-│   ├── test_*.py
-│   └── __pycache__
-└── tools
-    └── generate_asset_mapping_md.py
-```
+## 👀 Product Preview
 
-## 📚 Documentation Index
+Here’s a quick look at the working software — from screening statistically interesting pairs to digging into correlation structure and pair-level analysis.
 
-Our documentation is structured by operational level:
+- **Screener** for surfacing top cointegrated pairs
+- **Correlation workspace** with heatmaps and ranked pair tables
+- **Analysis views** with hedge ratio sizing, spread diagnostics, and price history
 
-| Level | Doc | Description |
-| :--- | :--- | :--- |
-| **[Dev Level]** | [**Setup Guide**](docs/SETUP.md) | **start here**. Complete local environment setup (Python, Node, Docker). |
-| **[Prod Level]** | [**Architecture**](docs/ARCHITECTURE.md) | System design, data flow, component interaction, and database schema. |
-| **[Prod Level]** | [**Deployment**](docs/DEPLOYMENT.md) | Staging and Production deployment guides, Docker orchestration, and CI/CD. |
-| **[Adhoc Level]** | [**Scripts & Tools**](docs/SCRIPTS.md) | Guide to the `scripts/` directory for data pipelines, backfills, and maintenance. |
-| **[Dev Level]** | [**Contributing**](CONTRIBUTING.md) | Guidelines for contributing to the codebase. |
+<table>
+	<tr>
+		<td width="50%" valign="top">
+			<img src="readme_previews/Screenshot%202026-04-03%20210009.png" alt="HedgeVision screener showing top cointegrated pairs" />
+			<p><strong>Screener:</strong> ranked opportunities with cointegration metrics, score cards, and fast pair triage.</p>
+		</td>
+		<td width="50%" valign="top">
+			<img src="readme_previews/Screenshot%202026-04-03%20205203.png" alt="HedgeVision correlation heatmap and top correlated pairs list" />
+			<p><strong>Correlation:</strong> heatmap visualization plus a sortable list of top positively and negatively correlated pairs.</p>
+		</td>
+	</tr>
+	<tr>
+		<td width="50%" valign="top">
+			<img src="readme_previews/Screenshot%202026-04-03%20205310.png" alt="HedgeVision hedge ratio calculator and spread signal analysis" />
+			<p><strong>Pair analysis:</strong> hedge ratio calculator with recommended long/short sizing and live spread interpretation.</p>
+		</td>
+		<td width="50%" valign="top">
+			<img src="readme_previews/Screenshot%202026-04-03%20205541.png" alt="HedgeVision pair price and spread chart with z-score" />
+			<p><strong>Spread diagnostics:</strong> dual-panel charting for price action, spread evolution, and z-score extremes.</p>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" valign="top">
+			<img src="readme_previews/Screenshot%202026-04-03%20210328.png" alt="HedgeVision pair overview with key metrics and overall score" />
+			<p><strong>Research summary:</strong> high-level pair health, suitability, and key statistics in a clean decision-ready layout.</p>
+		</td>
+	</tr>
+</table>
 
-## 🚀 Quick Start (5 minutes)
+---
+
+## 🚀 Quick Start (2 Commands)
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 16+
-- Git
-
-### Set Up Locally
-
-1. **Clone and install**:
-   ```bash
-   git clone https://github.com/ayush108108/hedgevision.git
-   cd hedgevision
-   pip install -e ".[all]"
-   ```
-
-2. **Start the Backend** (from repo root):
-   ```bash
-   uvicorn backend.api.main:app --reload
-   # API runs on http://localhost:8000
-   ```
-
-3. **Start the Frontend** (in new terminal, from `frontend-v2/`):
-   ```bash
-   cd frontend-v2
-   npm install
-   npm run dev
-   # Dashboard on http://localhost:3000
-   ```
-
-4. **Sync market data**:
-   ```bash
-   # In another terminal
-   hedgevision-cli sync --help
-   # or
-   python scripts/pipelines/daily_eod_pipeline.py --dry-run
-   ```
-
-✅ **You now have a fully functional local setup** with SQLite backend and paper trading.
-
-## 🔧 Common Commands
-
-### Backend
-
 ```bash
-# Development server
-uvicorn backend.api.main:app --reload
-
-# Run tests
-pytest
-
-# Lint & format
-black --line-length 100 .
-isort --profile black --line-length 100 .
-flake8 .
+# Verify you have:
+python --version  # 3.10+
+node --version    # 16+
+git lfs install   # Git LFS (for pre-loaded market data)
 ```
 
-### Frontend
+### Clone & Run
 
 ```bash
-# Development server
-cd frontend-v2 && npm run dev
+# 1. Clone (includes 2 years of pre-loaded market data via Git LFS)
+git clone https://github.com/ayush108108/hedgevision.git
+cd hedgevision
 
-# Build
-npm run build
+# 2. Install + start
+make install && make dev
 
-# Tests
-npm test
-
-# Lint
-npm run lint
+# 3. Open dashboard
+# → http://localhost:3000 (Frontend)
+# → http://localhost:8000/docs (API Docs)
 ```
 
-### Data Pipeline
+**That's it.** The repo ships with a pre-seeded SQLite database (`backend/prices.db`) containing 2 years of daily price data for 75 assets (crypto + equities). No API keys, no data fetching, no waiting.
+
+> **Want fresh data?** Run `make db-bootstrap` to re-fetch from yfinance.  
+> **Full from-scratch setup?** Run `make quickstart` (installs deps + rebuilds DB + starts dev).
+
+---
+
+## 📋 Common Commands
 
 ```bash
-# Sync daily data
-python scripts/pipelines/daily_eod_pipeline.py
+# Development
+make dev             # Start backend + frontend (Ctrl+C to stop)
+make backend-dev     # Backend only
+make frontend-dev    # Frontend only
 
-# Via CLI
-hedgevision-cli sync
+# Database
+make db-status       # Check DB tables and record counts
+make db-sync         # Fetch latest market data
+make db-reset        # Reset database (⚠️  WARNING: deletes all data)
 
-# Dry-run mode
-hedgevision-cli sync --dry-run
+# Testing
+make test            # Run all tests (Python + Frontend)
+make test-coverage   # Generate coverage report
+
+# Code Quality
+make lint            # Lint Python + Frontend
+make format          # Auto-format all code
+
+# Docker (Optional)
+make build           # Build containers
+make up              # Start containers
+make down            # Stop containers
+make logs            # View logs
+
+# Help
+make help            # Show all commands
 ```
 
-## 🔐 Configuration
+---
+
+## 🏗️ Architecture
+
+### Local-First Design
+
+| Component | Local Default | Optional Upgrade |
+|----------|--------------|------------------|
+| **Database** | SQLite (`backend/prices.db`) | Supabase (Postgres) |
+| **Broker** | Paper (simulated) | CCXT (live exchanges) |
+| **LLM** | Rules (no LLM) | OpenAI / Anthropic / Ollama |
+| **Cache** | In-memory | Redis |
+
+### Stack
+
+- **Backend**: FastAPI + Pydantic + SQLite/Supabase
+- **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
+- **Charts**: Lightweight Canvas + Recharts
+- **State**: Zustand (persisted to localStorage)
+- **Data Fetching**: TanStack Query (react-query)
+- **Testing**: Pytest (90%+ coverage) + Vitest
+
+### Directory Structure
+
+```
+hedgevision/
+├── hedgevision/        # Core package (models, LLM, broker, pipelines)
+├── backend/api/        # FastAPI routers + services + middleware
+├── frontend-v2/        # React dashboard
+├── scripts/            # Data pipelines, setup, maintenance
+├── tests/              # Python tests (pytest)
+├── config/             # Asset universe, benchmarks
+├── docs/               # Architecture, deployment, scripts
+└── Makefile            # All commands (local + Docker)
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Files
+
+Copy the example files to get started:
+
+```bash
+cp backend/api/.env.example backend/api/.env
+cp frontend-v2/.env.example frontend-v2/.env.local  # Optional
+```
 
 ### Local Development (Default)
 
 ```ini
-# backend/api/.env (copy from .env.example)
-DATA_BACKEND=sqlite
-BROKER_BACKEND=paper
-ENABLE_EXTERNAL_LLM=false
+# backend/api/.env
+DATA_BACKEND=sqlite                    # Use local SQLite
+DB_PATH=backend/prices.db              # Database location
+BROKER_BACKEND=paper                   # Simulated trading
+ENABLE_EXTERNAL_LLM=false              # No LLM required
+LLM_PROVIDER=rules                     # Rule-based intel
 ```
 
-### Production (Optional)
+**No external services required.** This is production-ready for local dev and testing.
+
+### Optional: Supabase Upgrade
 
 ```ini
-# Enable Supabase
 DATA_BACKEND=supabase
-SUPABASE_URL=your-url
-SUPABASE_ANON_KEY=your-key
-
-# Enable live trading (CCXT)
-BROKER_BACKEND=ccxt
-EXCHANGE_NAME=binance
-
-# Enable external LLM
-ENABLE_EXTERNAL_LLM=true
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_DB_URL=postgresql://...       # For analytics
 ```
 
-See [.env.example](backend/api/.env.example) for all options.
+### Optional: Live Trading
+
+```ini
+BROKER_BACKEND=ccxt
+EXCHANGE_NAME=binance
+CCXT_API_KEY=your-key
+CCXT_API_SECRET=your-secret
+```
+
+### Optional: LLM Providers
+
+```ini
+ENABLE_EXTERNAL_LLM=true
+LLM_PROVIDER=openai                    # or: anthropic, ollama, cpu
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Ollama (local)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3
+```
+
+See [backend/api/.env.example](backend/api/.env.example) for all options.
+
+---
 
 ## 🧪 Testing
 
+### Run Tests
+
 ```bash
-# Python tests with coverage
-pytest --cov=hedgevision
+# All tests (Python + Frontend)
+make test
 
-# By marker
-pytest -m unit
-pytest -m integration
+# Python only
+make test-python
+pytest tests/ -v
 
-# Frontend tests
+# Frontend only
+make test-frontend
 cd frontend-v2 && npm test
+
+# Coverage report
+make test-coverage
+# Opens htmlcov/index.html
 ```
+
+### Test Markers
+
+```bash
+pytest -m unit           # Unit tests only
+pytest -m integration    # Integration tests
+pytest -m real_api       # Tests requiring live APIs (skipped by default)
+```
+
+### Coverage Requirement
+
+Python tests enforce **90%+ coverage** on the `hedgevision/` package. CI will fail below this threshold.
+
+---
+
+## 📊 Features
+
+### Core Modules
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Correlation Screener** | ✅ Live | Find correlated asset pairs across crypto/equities |
+| **Cointegration Analysis** | ✅ Live | Statistical tests (Engle-Granger, Johansen) |
+| **Pair Analysis** | ✅ Live | Z-score, spread, regression, half-life |
+| **Backtest Engine** | ✅ Live | Mean-reversion strategy backtesting |
+| **Market Intelligence** | ✅ Live | Rule-based + LLM-powered insights |
+| **Paper Trading** | ✅ Live | Simulated order execution |
+
+### Optional Features (Env Flags)
+
+The Backtest Engine is **enabled by default** in the code (`VITE_FEATURE_BACKTEST` defaults to `true`). Other optional pages require explicit opt-in via `frontend-v2/.env.local`:
+
+```bash
+# Enable optional pages (frontend-v2/.env.local)
+VITE_FEATURE_PORTFOLIO=true
+VITE_FEATURE_NEWS=true
+VITE_FEATURE_CALCULATOR=true
+VITE_FEATURE_WATCHLIST=true
+
+# Disable backtest (on by default — set to false to turn off)
+VITE_FEATURE_BACKTEST=false
+```
+
+### Coming Soon
+
+- **Live Trading Signals**: AI-powered entry/exit recommendations
+- **Risk Management**: Position sizing, stop-loss automation
+- **Multi-Strategy Support**: Momentum, volatility, arbitrage
+- **WebSocket Feeds**: Real-time price updates
+
+---
+
+## 🐳 Docker Deployment
+
+### Development
+
+```bash
+make build           # Build containers
+make up              # Start services
+make logs            # View logs
+make down            # Stop services
+```
+
+### Production
+
+```bash
+make build-prod      # Build with production config
+make up-prod         # Start production stack
+make health          # Check service health
+```
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full deployment guide.
+
+---
+
+## 📚 Documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [CLAUDE.md](CLAUDE.md) | AI assistant guidance (project overview, commands, conventions) |
+| [SETUP.md](docs/SETUP.md) | Detailed local environment setup |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, DB schema |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker orchestration, production deployment |
+| [SCRIPTS.md](docs/SCRIPTS.md) | Data pipelines, backfills, maintenance |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Code style, testing, PR process |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting |
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines:
-- Code style (Black, ESLint)
-- Testing requirements (90%+ coverage)
-- Commit conventions
-- PR process
+Contributions welcome! Please follow these guidelines:
 
-## 🐛 Reporting Issues
+### Code Style
 
-Found a bug or have a feature request? Open an [issue](https://github.com/ayush108108/hedgevision/issues).
+- **Python**: Black (line-length 100), isort, flake8, mypy strict
+- **Frontend**: ESLint, Prettier, TypeScript strict
+- **Run**: `make format` before committing
 
-For security vulnerabilities, please see [SECURITY.md](SECURITY.md).
+### Testing
 
-## 📖 Learning Resources
+- Write tests for all new features
+- Maintain 90%+ coverage on `hedgevision/` package
+- Mark tests: `@pytest.mark.unit`, `@pytest.mark.integration`
 
-- **[Pairs Trading 101](https://en.wikipedia.org/wiki/Pairs_trading)**: Statistical arbitrage fundamentals
-- **[Cointegration & Stationarity](https://en.wikipedia.org/wiki/Cointegration)**: Core quant concepts
-- **[FastAPI Docs](https://fastapi.tiangolo.com/)**: Backend API framework
-- **[React + Vite](https://vitejs.dev/)**: Frontend build & dev tools
+### Pull Requests
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make changes and add tests
+4. Run `make lint` and `make test`
+5. Commit with clear messages
+6. Push and open a PR
+
+### Issues
+
+- **Bugs**: Include steps to reproduce, expected vs actual behavior
+- **Features**: Describe use case and proposed solution
+- **Security**: Email [ayushverma108108@gmail.com](mailto:ayushverma108108@gmail.com) directly
+
+---
+
+## 🛡️ Security
+
+HedgeVision includes security hardening:
+
+- **API Key Sanitization**: All outbound payloads scrubbed of secrets
+- **Rate Limiting**: Middleware protects against abuse
+- **CORS**: Configurable origin allowlist
+- **Input Validation**: Pydantic strict models with extra="forbid"
+- **SQL Injection Protection**: Parameterized queries throughout
+
+Found a vulnerability? See [SECURITY.md](SECURITY.md) for responsible disclosure.
+
+---
 
 ## 📜 License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
-## 🙋 Support
+Free to use, modify, and distribute. No warranties. Use at your own risk.
 
 - **Documentation**: See [docs/](docs/) directory
 - **Issues**: [GitHub Issues](https://github.com/ayush108108/hedgevision/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/ayush108108/hedgevision/discussions)
 - **Contact**: ayushverma108108@gmail.com
+---
+
+## 🌐 Community & Support
+
+- **Issues**: [github.com/ayush108108/hedgevision/issues](https://github.com/ayush108108/hedgevision/issues)
+- **Email**: [ayushverma108108@gmail.com](mailto:ayushverma108108@gmail.com)
+- **Twitter/X**: [@MrAyush108](https://twitter.com/MrAyush108)
+- **Website**: [ayushv.dev](https://ayushv.dev)
 
 ---
 
-**Built with ❤️ for the open-source quant community.**
+## 🚀 What's Next
+
+HedgeVision is the **first public module** of **SuperIntel** — a fully autonomous, multi-agent trading system with far more components than what you see here.
+
+More OSS releases from this ecosystem coming soon:
+
+- Execution engine with smart order routing
+- Multi-strategy portfolio optimizer
+- Risk management framework
+- Market microstructure analytics
+
+**Want early access?**
+
+- ⭐ Star this repo
+- 👁️ Watch for updates
+- 📧 Email [join@correlatex.com](mailto:join@correlatex.com)
+
+---
+
+*Built in public. More coming. Fork it, break it, make it better.*
+
