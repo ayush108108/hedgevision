@@ -25,17 +25,17 @@ Here’s a quick look at the working software — from screening statistically i
 <table>
 	<tr>
 		<td width="50%" valign="top">
-			<img src="readme_previews/Screenshot%202026-04-03%20210009.png" alt="HedgeVision screener showing top cointegrated pairs" />
+			<img src="readme_previews/Screenshot%202026-04-03%20205203.png" alt="HedgeVision screener showing top cointegrated pairs" />
 			<p><strong>Screener:</strong> ranked opportunities with cointegration metrics, score cards, and fast pair triage.</p>
 		</td>
 		<td width="50%" valign="top">
-			<img src="readme_previews/Screenshot%202026-04-03%20205203.png" alt="HedgeVision correlation heatmap and top correlated pairs list" />
+			<img src="readme_previews/Screenshot%202026-04-03%20205310.png" alt="HedgeVision correlation heatmap and top correlated pairs list" />
 			<p><strong>Correlation:</strong> heatmap visualization plus a sortable list of top positively and negatively correlated pairs.</p>
 		</td>
 	</tr>
 	<tr>
 		<td width="50%" valign="top">
-			<img src="readme_previews/Screenshot%202026-04-03%20205310.png" alt="HedgeVision hedge ratio calculator and spread signal analysis" />
+			<img src="readme_previews/Screenshot%202026-04-03%20210009.png" alt="HedgeVision hedge ratio calculator and spread signal analysis" />
 			<p><strong>Pair analysis:</strong> hedge ratio calculator with recommended long/short sizing and live spread interpretation.</p>
 		</td>
 		<td width="50%" valign="top">
