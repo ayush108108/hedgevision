@@ -6,6 +6,8 @@
 
 Built for **local development by default**. SQLite, paper broker, and rule-based intel run out of the box. Supabase (Postgres), external LLMs (OpenAI/Anthropic/Ollama), and live exchange brokers (CCXT) are **explicit opt-ins**.
 
+Built by **Ayush Verma**, a [Python & AI Systems Engineer](https://ayushv.dev). HedgeVision is presented as engineering proof for real-time Python/FastAPI services, WebSocket/data pipelines, stateful decision systems, persistence, testing, and long-running operational workloads.
+
 This is part of **SuperIntel** — a fully autonomous trading ecosystem. HedgeVision is the first public component. More OSS modules dropping soon.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
