@@ -1,3 +1,5 @@
+
+
 # HedgeVision
 
 > **Open-source statistical arbitrage platform.** Local-first with optional Supabase scaling.
@@ -136,7 +138,7 @@ make help            # Show all commands
 
 - **Backend**: FastAPI + Pydantic + SQLite/Supabase
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
-- **Charts**: Lightweight Canvas + Recharts
+- **Charts**: Lightweight Canvas + ECharts
 - **State**: Zustand (persisted to localStorage)
 - **Data Fetching**: TanStack Query (react-query)
 - **Testing**: Pytest (90%+ coverage) + Vitest
@@ -417,4 +419,3 @@ More OSS releases from this ecosystem coming soon:
 ---
 
 *Built in public. More coming. Fork it, break it, make it better.*
-
