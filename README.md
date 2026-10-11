@@ -1,5 +1,7 @@
 # HedgeVision
 
+[Live preview](https://stat-arb-preview-a349f0ed4798.herokuapp.com/) — Prototype preview; may be slow to wake.
+
 > **Open-source statistical arbitrage platform.** Local-first with optional Supabase scaling.
 
 **HedgeVision** is a production-ready quantitative trading platform for stat-arb strategies. Python backend (FastAPI) + React frontend (Vite/TypeScript). Discover cointegrated pairs, backtest strategies, and run paper trading simulations — **zero external dependencies required**.
